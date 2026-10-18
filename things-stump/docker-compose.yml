@@ -27,6 +27,6 @@ services:
     volumes:
       # Database, thumbnails, logs
       - ${APP_DATA_DIR}/data/config:/config
-      # Library. Defaults to Downloads/books; change it in the app's settings
+      # Library. Defaults to Downloads/comics; change it in the app's settings
       # (Folder access -> Books).
-      - ${UMBREL_ROOT}/data/storage/downloads/books:/data
+      - ${UMBREL_ROOT}/data/storage/downloads/comics:/data

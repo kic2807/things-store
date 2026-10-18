@@ -13,10 +13,9 @@ library folder, e.g. to compare them before switching. Komga-only add-ons
 | Host (`~/umbrel/app-data/things-kavita/data/` unless noted) | Container | What |
 |---|---|---|
 | `config/` | `/kavita/config` | database, covers, cache, logs, `appsettings.json` |
-| Umbrel `Downloads/books` (default, read-only) | `/books` | your library files |
+| Umbrel `Downloads/comics` (default, read-only) | `/books` | your library files |
 
-The library defaults to Umbrel's `Downloads/books`, the same folder as
-things-komga. Change it in Umbrel: right-click Kavita → Settings → Folder
+The library defaults to Umbrel's `Downloads/comics`. Change it in Umbrel: right-click Kavita → Settings → Folder
 access → **Books**.
 
 The official image only runs as root (upstream dropped `PUID`/`PGID`), so the
@@ -25,7 +24,7 @@ never writes to the library anyway.
 
 ## Setup
 
-1. Install, put books into `Downloads/books` (or pick another folder as above).
+1. Install, put books into `Downloads/comics` (or pick another folder as above).
 2. Open Kavita from the Umbrel home screen (port **5000**) and create the
    admin account.
 3. Server settings → Libraries → **Add Library**: type Manga, Comic or Book,

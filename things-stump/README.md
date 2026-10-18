@@ -23,7 +23,7 @@ back to the 0.1.x release with the same data.
 | Host (`~/umbrel/app-data/things-stump/data/` unless noted) | Container | What |
 |---|---|---|
 | `config/` | `/config` | database, thumbnails, logs |
-| Umbrel `Downloads/books` (default) | `/data` | your library files |
+| Umbrel `Downloads/comics` (default) | `/data` | your library files |
 | `.env` (optional) | env | OIDC settings |
 
 Change the library folder in Umbrel: right-click Stump → Settings → Folder
@@ -31,7 +31,7 @@ access → **Books**. Any folder (Home, external drive, network share) works.
 
 ## Setup
 
-1. Install, put books into `Downloads/books` (or pick another folder as above).
+1. Install, put books into `Downloads/comics` (or pick another folder as above).
 2. Open Stump from the home screen and create the owner account.
 3. Libraries → Create → path `/data` (or a subfolder like `/data/comics`).
 

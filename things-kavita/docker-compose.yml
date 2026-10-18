@@ -20,6 +20,6 @@ services:
     volumes:
       # Database, covers, cache, logs, appsettings.json
       - ${APP_DATA_DIR}/data/config:/kavita/config
-      # Library, the same folder things-komga uses by default;
+      # Library. Defaults to Downloads/comics;
       # change it in the app's settings (Folder access -> Books).
-      - ${UMBREL_ROOT}/data/storage/downloads/books:/books:ro
+      - ${UMBREL_ROOT}/data/storage/downloads/comics:/books:ro

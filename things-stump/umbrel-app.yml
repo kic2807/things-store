@@ -1,22 +1,22 @@
 manifestVersion: 1
 id: things-stump
 folderAccess:
-  - id: umbrel-downloads:books
-    name: Books
+  - id: umbrel-downloads:comics
+    name: Comics
     note: Comics, manga and ebooks for your libraries. Available inside Stump at /data.
     mounts:
       - service: server
         targetPath: /data
 category: media
 name: Stump
-version: "nightly-202610170023"
+version: "nightly-202610170023-1"
 tagline: Comics, manga and digital book server with OPDS
 icon: https://raw.githubusercontent.com/kic2807/things-store/main/things-stump/icon.svg
 description: >-
   Stump is a free and open source comics, manga and digital book server with OPDS support, Kobo and KOReader sync, and a mobile app.
 
 
-  On first open, create the server owner account. Then add a library pointing at /data (Downloads/books by default; pick another folder in the app's settings under Folder access).
+  On first open, create the server owner account. Then add a library pointing at /data (Downloads/comics by default; pick another folder in the app's settings under Folder access).
 
 
   Reader apps use the same address and port. Their endpoints (/opds, /api, /kobo, /koreader) skip Umbrel login and use Stump's own login.
