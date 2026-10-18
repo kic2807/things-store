@@ -34,6 +34,13 @@
       "always_review": ["major"],
       "automerge": ["minor", "patch"]
     },
+    "jvmilazz0/kavita": {
+      "_comment": "Kavita versions have four parts (0.9.0.2); the fourth is a hotfix build. Pre-1.0, so minor bumps are reviewed.",
+      "tag": "^(?P<v>\\d+\\.\\d+\\.\\d+)(?:\\.(?P<hotfix>\\d+))?$",
+      "notes": { "github": "Kareadita/Kavita", "tag": "^v(?P<v>\\d+\\.\\d+\\.\\d+)(?:\\.\\d+)?$" },
+      "always_review": ["major", "minor"],
+      "automerge": ["patch", "build"]
+    },
     "ghcr.io/kic2807/sideimpactor": {
       "_comment": "Built by .github/workflows/build-sideimpactor.yml from upstream main; tag <commit date YYYY.MMDD.HHMM>-<sha>.",
       "tag": "^(?P<v>\\d{4}\\.\\d{4}\\.\\d{4})-[0-9a-f]{7}$",
@@ -74,6 +81,7 @@
     "things-tinyauth": { "primary": "ghcr.io/tinyauthapp/tinyauth" },
     "things-transmission-vpn": { "primary": "tailscale/tailscale" },
     "things-komga": { "primary": "gotson/komga" },
+    "things-kavita": { "primary": "jvmilazz0/kavita" },
     "things-sideimpactor": { "primary": "ghcr.io/kic2807/sideimpactor" }
   }
 }

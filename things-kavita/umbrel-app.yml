@@ -1,0 +1,42 @@
+manifestVersion: 1
+id: things-kavita
+folderAccess:
+  - id: umbrel-downloads:books
+    name: Books
+    note: Comics, manga and ebooks for your libraries. Available inside Kavita at /books (read-only).
+    mounts:
+      - service: server
+        targetPath: /books
+category: media
+name: Kavita
+version: "0.9.1"
+tagline: Reading server for manga, comics and ebooks
+icon: https://raw.githubusercontent.com/kic2807/things-store/main/things-kavita/icon.svg
+description: >-
+  Kavita is a fast, cross-platform reading server for manga, webtoons, comics and ebooks, with a web reader, OPDS, reading lists and an API for apps like Mihon.
+
+
+  On first open, create the admin account. Then add a library pointing at /books (Downloads/books by default, the same folder as Komga; pick another folder in the app's settings under Folder access). Kavita only reads the library; it never changes your files.
+
+
+  Reader apps use the same address and port. Their endpoints (/api) skip Umbrel login and use Kavita's own login.
+releaseNotes: ""
+
+developer: Kareadita
+website: https://www.kavitareader.com
+dependencies: []
+repo: https://github.com/Kareadita/Kavita
+support: https://github.com/Kareadita/Kavita/issues
+
+port: 5000
+gallery: []
+path: ""
+
+defaultUsername: ""
+defaultPassword: ""
+
+permissions:
+  - STORAGE_DOWNLOADS
+
+submitter: kic2807
+submission: https://github.com/kic2807/things-store

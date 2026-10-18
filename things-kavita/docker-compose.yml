@@ -1,0 +1,25 @@
+version: "3.7"
+
+services:
+  app_proxy:
+    environment:
+      APP_HOST: things-kavita_server_1
+      APP_PORT: 5000
+      # Kavita has its own login. Reader apps (OPDS, Mihon/Tachiyomi and other
+      # API clients) cannot send Umbrel's login cookie, so their endpoints skip
+      # Umbrel login. The web UI itself stays behind it.
+      PROXY_AUTH_WHITELIST: "/api/*"
+
+  server:
+    image: jvmilazz0/kavita:0.9.1@sha256:31181a32f0dda73cae68721867028a7253d57881b58bea5754cd9e578e75421a
+    restart: on-failure
+    # The image only runs as root (upstream removed PUID/PGID), so the library
+    # is mounted read-only; Kavita keeps covers and its database in config/.
+    environment:
+      TZ: Asia/Seoul
+    volumes:
+      # Database, covers, cache, logs, appsettings.json
+      - ${APP_DATA_DIR}/data/config:/kavita/config
+      # Library, the same folder things-komga uses by default;
+      # change it in the app's settings (Folder access -> Books).
+      - ${UMBREL_ROOT}/data/storage/downloads/books:/books:ro
