@@ -20,6 +20,7 @@ ICONS = {
     "things-cloudflare-ddns": ("cloudflare", "#1d2230", 0.74),
     "things-komga": ("komga", "#005ed3", 0.96),
     "things-kavita": ("kavita", "#4ac694", 1.0),
+    "things-stump": ("stump", "#f4e6de", 1.0),
     "things-pocket-id": ("pocket-id", "#000000", 1.0),
     "things-tinyauth": ("tinyauth", "#eef3f8", 0.74),
     "things-transmission-vpn": ("private-internet-access", "#ffffff", 0.68),
@@ -32,7 +33,12 @@ def wrap(svg: str, background: str, share: float) -> str:
     svg = re.sub(r"<\?xml[^>]*\?>", "", svg).strip()
     head = re.match(r"<svg\b([^>]*)>", svg)
     attrs = head.group(1)
-    view_box = re.search(r'viewBox="([^"]+)"', attrs).group(1)
+    view_box = re.search(r'viewBox="([^"]+)"', attrs)
+    if view_box:
+        view_box = view_box.group(1)
+    else:  # some logos only set width/height (e.g. stump)
+        size = lambda name: re.search(rf'\b{name}="([\d.]+)', attrs).group(1)
+        view_box = f"0 0 {size('width')} {size('height')}"
     inner = svg[head.end():svg.rindex("</svg>")]
     size = 256 * share
     offset = (256 - size) / 2

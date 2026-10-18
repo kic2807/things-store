@@ -29,6 +29,7 @@ The apps show up under **Haus Things App Store**.
 | [things-transmission-vpn](things-transmission-vpn/README.md) | 1.104.1 | — (30107 placeholder) | Add-on for the official Transmission app: Mullvad exit node + kill switch via a Tailscale sidecar. No web UI. Uses the Docker socket (watchdog). | `.env` |
 | [things-komga](things-komga/README.md) | 1.29.1 | 25600 | Comics, manga and ebook server (OPDS, Kobo sync, Mihon API). | none (optional `application.yml` for OIDC) |
 | [things-kavita](things-kavita/README.md) | 0.9.1 | 5000 | Manga, comics and ebook reader server (OPDS, Mihon). Can share Komga's library folder (read-only) for a side-by-side test. | none |
+| [things-stump](things-stump/README.md) | nightly | 10801 | Comics, manga and ebook server (OPDS, Kobo/KOReader sync), nightly builds. Can share Komga's library folder for a side-by-side test. | none (optional `.env` for OIDC) |
 | [things-komga-ko-meta](things-komga-ko-meta/README.md) | 0.1.2 | — (30109 placeholder) | Add-on for things-komga: Korean titles, synopses, characters, Korean edition covers and textless wide/square art. No web UI. | `.env` |
 | [things-sideimpactor](things-sideimpactor/README.md) | 2026.0729.0513 | — (30108 placeholder) | Sign and install IPA files on an iPhone from the browser (WebUSB), with an Apple-only Wisp relay. HTTPS via Caddy only. | none |
 | [things-band-backup](things-band-backup/README.md) | 2.4.0 | — (30103 placeholder) | BAND → Immich backup and schedule-photo → calendar bot. No web UI. | `.env` |
@@ -43,7 +44,7 @@ App data lives in `~/umbrel/app-data/<app-id>/data/` on the Umbrel server
 (Settings → Advanced settings → Terminal → umbrelOS, or SSH). Docker commands
 there need `sudo`.
 
-### `.env` apps (cloudflare-ddns, caddy, pocket-id, tinyauth, gitea-act-runner, transmission-vpn, band-backup, komga-ko-meta)
+### `.env` apps (cloudflare-ddns, caddy, pocket-id, tinyauth, gitea-act-runner, transmission-vpn, stump, band-backup, komga-ko-meta)
 
 `docker-compose.yml` loads `${APP_DATA_DIR}/data/.env` with
 `env_file: required: false`, so the app installs without it and picks it up on
@@ -117,6 +118,7 @@ needed, just **Merge**). A change needs review when:
 | tailscale | none (links only) | — | minor, patch |
 | gotson/komga | GitHub releases | major | minor, patch |
 | jvmilazz0/kavita | GitHub releases | major, minor (pre-1.0) | patch, hotfix build |
+| aaronleopold/stump (`nightly`) | none: follows the tag's digest | — | every new build |
 | ghcr.io/kic2807/sideimpactor | built here from upstream main (`.github/workflows/build-sideimpactor.yml`) | — | all |
 | ghcr.io/kic2807/wisp-relay | built here (`.github/workflows/build-wisp-relay.yml`) | — | all |
 | pocketid/pocket-id | GitHub releases | major | minor, patch |
