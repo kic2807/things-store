@@ -27,7 +27,7 @@ back to the 0.1.x release with the same data.
 | `.env` (optional) | env | OIDC settings |
 
 Change the library folder in Umbrel: right-click Stump → Settings → Folder
-access → **Books**. Any folder (Home, external drive, network share) works.
+access → **Comics**. Any folder (Home, external drive, network share) works.
 
 ## Setup
 

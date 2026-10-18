@@ -15,8 +15,9 @@ library folder, e.g. to compare them before switching. Komga-only add-ons
 | `config/` | `/kavita/config` | database, covers, cache, logs, `appsettings.json` |
 | Umbrel `Downloads/comics` (default, read-only) | `/books` | your library files |
 
-The library defaults to Umbrel's `Downloads/comics`. Change it in Umbrel: right-click Kavita → Settings → Folder
-access → **Books**.
+The library defaults to Umbrel's `Downloads/comics`. Change it in Umbrel:
+right-click Kavita → Settings → Folder access → **Comics** (it stays
+read-only).
 
 The official image only runs as root (upstream dropped `PUID`/`PGID`), so the
 files in `config/` belong to root and the library is mounted read-only. Kavita
