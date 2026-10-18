@@ -12,7 +12,7 @@ For each series:
 | Synopsis, publisher, genres, status | series metadata | Ridibooks (AniList English synopsis as fallback) |
 | Authors | book authors | Ridibooks, AniList |
 | Characters (Korean edition names, e.g. 강백호) | book notable entities, kind `character` | Wikidata, AniList |
-| Korean edition cover (960×1436) | series thumbnail, selected only while Komga's generated cover is in use | Ridibooks |
+| Textless 3:4 series poster (Korean edition cover as fallback) | series thumbnail, selected while Komga's generated cover is in use, or with `--replace-cover` | TMDB (with `TMDB_API_KEY`), Kitsu, Ridibooks |
 | Textless wide and square art | extra series thumbnails, not selected | Kitsu, AniList, TMDB (optional) |
 
 It only fills empty fields; locked fields are never changed. Links to the
@@ -67,6 +67,7 @@ title or redo one series:
 sudo docker exec things-komga-ko-meta_meta_1 komga-ko-meta inspect "장송의 프리렌"
 sudo docker exec things-komga-ko-meta_meta_1 komga-ko-meta push --search "원피스" --force --overwrite
 sudo docker exec things-komga-ko-meta_meta_1 komga-ko-meta push --dry-run --force
+sudo docker exec things-komga-ko-meta_meta_1 komga-ko-meta push --force --replace-cover   # switch existing covers to the textless poster
 ```
 
 ## Releases

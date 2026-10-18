@@ -2,19 +2,19 @@ manifestVersion: 1
 id: things-komga-ko-meta
 category: media
 name: Komga Korean Metadata
-version: "0.1.2"
+version: "0.2.0"
 tagline: Korean titles, synopses, characters and artwork for Komga
 icon: https://raw.githubusercontent.com/kic2807/things-store/main/things-komga-ko-meta/icon.png
 description: >-
   Background add-on for Komga with no web UI. Opening it from the home screen does nothing; check its log.
 
 
-  For every series in Komga it fills in Korean metadata and artwork: the Korean title, synopsis, publisher, genres, authors and status from the Korean edition (Ridibooks), character names as used in the Korean edition (Wikidata, AniList), the Korean edition cover, and textless wide and square key art (Kitsu, AniList, optionally TMDB). It only fills empty fields and never changes locked ones. New series are picked up as soon as Komga adds them.
+  For every series in Komga it fills in Korean metadata and artwork: the Korean title, synopsis, publisher, genres, authors and status from the Korean edition (Ridibooks), character names as used in the Korean edition (Wikidata, AniList), a textless 3:4 poster for the whole series as its cover (TMDB, Kitsu; the Korean edition cover as fallback), and textless wide and square key art (Kitsu, AniList, optionally TMDB). It only fills empty fields and never changes locked ones. New series are picked up as soon as Komga adds them.
 
 
   Before starting, create the .env file with a Komga admin API key in the app data folder (see the store README), then restart the app.
 releaseNotes: >-
-  An AniList link added or changed in Komga is now picked up right away instead of after the 7-day retry. No other changes.
+  The series cover is now a textless 3:4 key visual for the whole series instead of the volume 1 cover: TMDB textless posters (set TMDB_API_KEY in .env) and Kitsu posters, with the Korean edition cover as fallback. New series get it automatically. To switch series that already have a cover, run once: sudo docker exec things-komga-ko-meta_meta_1 komga-ko-meta push --force --replace-cover
 
 developer: kic2807
 website: https://github.com/kic2807/komga-ko-meta
