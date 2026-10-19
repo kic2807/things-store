@@ -18,8 +18,6 @@ SRC = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/{}.svg"
 ICONS = {
     "things-caddy": ("caddy", "#ffffff", 0.72),
     "things-cloudflare-ddns": ("cloudflare", "#1d2230", 0.74),
-    "things-komga": ("komga", "#005ed3", 0.96),
-    "things-kavita": ("kavita", "#4ac694", 1.0),
     "things-stump": ("stump", "#f4e6de", 1.0),
     "things-pocket-id": ("pocket-id", "#000000", 1.0),
     "things-tinyauth": ("tinyauth", "#eef3f8", 0.74),

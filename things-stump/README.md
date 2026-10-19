@@ -3,11 +3,6 @@
 [Stump](https://github.com/stumpapp/stump): comics, manga and ebook server with
 OPDS, Kobo and KOReader sync, and a mobile app.
 
-It can run next to [things-komga](../things-komga/README.md) and
-[things-kavita](../things-kavita/README.md) on the same library folder, e.g.
-to compare them. Komga-only add-ons (things-komga-ko-meta) do not work with
-Stump.
-
 ## Nightly builds
 
 This app runs Stump's **nightly** image (`aaronleopold/stump:nightly`, pinned
@@ -49,10 +44,9 @@ Port **10801** (Stump's default, so reader apps can use their usual setting):
    (see things-pocket-id README → Connecting apps).
 2. Create `~/umbrel/app-data/things-stump/data/.env` from `.env.example` with the
    client ID and secret, `chmod 600`, restart Stump.
-3. OIDC needs Stump on an HTTPS host. `comics.<domain>` currently points to
-   Komga (Caddyfile example); to move it, change the Caddy host `comics.` to
-   `things-stump_server_1:10801` and the callback URL above stays the same.
-   While comparing, use the LAN port instead and skip OIDC.
+3. Stump is served at `https://comics.<domain>` (Caddy host `comics.` →
+   `things-stump_server_1:10801`, already in the Caddyfile example; add
+   `comics.<domain>` to cloudflare-ddns `DOMAINS`).
 
 See [Stump's OIDC guide](https://www.stumpapp.dev/docs/guides/access-control/oidc)
 for `STUMP_OIDC_DISABLE_LOCAL_AUTH` and other options.

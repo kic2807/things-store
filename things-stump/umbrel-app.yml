@@ -21,7 +21,7 @@ description: >-
 
   Reader apps use the same address and port. Their endpoints (/opds, /api, /kobo, /koreader) skip Umbrel login and use Stump's own login.
 releaseNotes: >-
-  Back in the store on the nightly build (aaronleopold/stump:nightly) for a side-by-side test with Komga and Kavita.
+  Stump is the store's comics server again (Komga and Kavita were removed). Library defaults to Downloads/comics.
 
 developer: Stump
 website: https://www.stumpapp.dev
