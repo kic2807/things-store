@@ -29,7 +29,7 @@ The apps show up under **Haus Things App Store**.
 | [things-transmission-vpn](things-transmission-vpn/README.md) | 1.104.1 | — (30107 placeholder) | Add-on for the official Transmission app: Mullvad exit node + kill switch via a Tailscale sidecar. No web UI. Uses the Docker socket (watchdog). | `.env` |
 | [things-stump](things-stump/README.md) | nightly | 10801 | Comics, manga and ebook server (OPDS, Kobo/KOReader sync), nightly builds. | none (optional `.env` for OIDC) |
 | [things-sideimpactor](things-sideimpactor/README.md) | 2026.0729.0513 | — (30108 placeholder) | Sign and install IPA files on an iPhone from the browser (WebUSB), with an Apple-only Wisp relay. HTTPS via Caddy only. | none |
-| [things-band-backup](things-band-backup/README.md) | 2.4.0 | — (30103 placeholder) | BAND → Immich backup and schedule-photo → calendar bot. No web UI. | `.env` |
+| [things-band-backup](things-band-backup/README.md) | 2.5.0 | — (30103 placeholder) | BAND → Immich backup and schedule-photo → calendar bot. No web UI. | `.env` |
 
 "No web UI" apps have no `app_proxy`; the manifest port is only a placeholder
 and opening them from the home screen shows nothing. Check them with
