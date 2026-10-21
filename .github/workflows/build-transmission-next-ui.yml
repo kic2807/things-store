@@ -1,0 +1,138 @@
+name: Build transmission-next-ui
+
+# Builds ghcr.io/kic2807/transmission-next-ui:<upstream version>-r<REVISION>
+# (linux/amd64) for things-transmission-vpn: the release.zip of the newest
+# hisproc/transmission-next-ui release, served by Caddy (see
+# .github/transmission-next-ui). Built only when that tag does not exist yet;
+# bump REVISION for a rebuild of the same release. Runs daily before
+# "Update images", which then opens the things-transmission-vpn PR.
+
+on:
+  schedule:
+    # Daily at 03:48 KST (18:48 UTC)
+    - cron: "48 18 * * *"
+  push:
+    branches: [main]
+    paths:
+      - .github/transmission-next-ui/**
+      - .github/workflows/build-transmission-next-ui.yml
+  workflow_dispatch:
+    inputs:
+      release:
+        description: "Upstream release tag, e.g. v0.3.4 (empty = latest)"
+        required: false
+      force:
+        description: "Rebuild even if the tag exists"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: build-transmission-next-ui
+  cancel-in-progress: false
+
+env:
+  IMAGE: ghcr.io/kic2807/transmission-next-ui
+  UPSTREAM: hisproc/transmission-next-ui
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pick upstream release and tag
+        id: v
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          release="${{ inputs.release }}"
+          if [ -z "$release" ]; then
+            release=$(gh api "repos/$UPSTREAM/releases/latest" --jq .tag_name)
+          fi
+          rev=$(cat .github/transmission-next-ui/REVISION)
+          tag="${release#v}-r${rev}"
+          echo "release=$release" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "upstream $release -> $tag"
+          token=$(curl -s "https://ghcr.io/token?scope=repository:kic2807/transmission-next-ui:pull" | python3 -c "import sys,json;print(json.load(sys.stdin).get('token',''))")
+          code=$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $token" \
+            -H "Accept: application/vnd.oci.image.index.v1+json" "https://ghcr.io/v2/kic2807/transmission-next-ui/manifests/$tag")
+          if [ "$code" = 200 ] && [ "${{ inputs.force }}" != "true" ]; then
+            echo "$IMAGE:$tag already exists"
+          else
+            echo "build=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Unpack the release
+        if: steps.v.outputs.build == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release download "${{ steps.v.outputs.release }}" -R "$UPSTREAM" -p release.zip -D /tmp/tnu
+          sha256sum /tmp/tnu/release.zip
+          mkdir .github/transmission-next-ui/site
+          unzip -q /tmp/tnu/release.zip -d .github/transmission-next-ui/site
+          test -f .github/transmission-next-ui/site/index.html
+
+      - uses: docker/setup-buildx-action@v3
+        if: steps.v.outputs.build == 'true'
+
+      - name: Build and test
+        if: steps.v.outputs.build == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: .github/transmission-next-ui
+          platforms: linux/amd64
+          load: true
+          tags: transmission-next-ui:test
+
+      - name: Check the page and the RPC route against a real Transmission
+        if: steps.v.outputs.build == 'true'
+        run: |
+          docker network create tnu
+          # Same image and container name as the official Umbrel app.
+          docker run -d --name transmission_server_1 --network tnu linuxserver/transmission:latest
+          docker run -d --name web --network tnu -p 18080:8080 transmission-next-ui:test
+          curl -s -o /dev/null -D - http://127.0.0.1:18080/ | grep -i '^content-type: text/html'
+          js=$(curl -s http://127.0.0.1:18080/ | grep -o 'assets/[^"]*\.js' | head -1)
+          echo "checking $js"
+          curl -s -o /dev/null -D - "http://127.0.0.1:18080/$js" | grep -i '^content-type: .*javascript'
+          # Transmission answers a first RPC call with 409 and a session id.
+          for i in $(seq 30); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' -X POST http://127.0.0.1:18080/transmission/rpc)
+            [ "$code" = 409 ] && break
+            sleep 2
+          done
+          echo "rpc: $code"
+          curl -s -D - -o /dev/null -X POST http://127.0.0.1:18080/transmission/rpc | grep -i '^x-transmission-session-id:'
+
+      - uses: docker/login-action@v3
+        if: steps.v.outputs.build == 'true'
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push
+        if: steps.v.outputs.build == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: .github/transmission-next-ui
+          platforms: linux/amd64
+          # Provenance makes the tag a multi-platform index, as update_images.py expects.
+          provenance: mode=min
+          push: true
+          tags: ${{ env.IMAGE }}:${{ steps.v.outputs.tag }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.description=Transmission Next UI (${{ env.UPSTREAM }} ${{ steps.v.outputs.release }}) served by Caddy for things-transmission-vpn
+            org.opencontainers.image.version=${{ steps.v.outputs.tag }}
+            org.opencontainers.image.licenses=MIT
+
+      - name: Digest
+        if: steps.v.outputs.build == 'true'
+        run: docker buildx imagetools inspect "${IMAGE}:${{ steps.v.outputs.tag }}"

@@ -115,6 +115,7 @@ needed, just **Merge**). A change needs review when:
 | aaronleopold/stump (`nightly`) | none: follows the tag's digest | — | every new build |
 | ghcr.io/kic2807/sideimpactor | built here from upstream main (`.github/workflows/build-sideimpactor.yml`) | — | all |
 | ghcr.io/kic2807/wisp-relay | built here (`.github/workflows/build-wisp-relay.yml`) | — | all |
+| ghcr.io/kic2807/transmission-next-ui | hisproc/transmission-next-ui releases (built here, `.github/workflows/build-transmission-next-ui.yml`) | major, minor | patch, rebuild |
 | pocketid/pocket-id | GitHub releases | major | minor, patch |
 | ghcr.io/tinyauthapp/tinyauth | GitHub releases | major | patch |
 | ghcr.io/kic2807/caddy-cloudflare | caddyserver/caddy releases | major | patch, plugin-only rebuild |

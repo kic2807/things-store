@@ -48,6 +48,13 @@
       "tag": "^(?P<v>\\d+\\.\\d+\\.\\d+)-r(?P<r>\\d+)$",
       "automerge": ["major", "minor", "patch", "build"]
     },
+    "ghcr.io/kic2807/transmission-next-ui": {
+      "_comment": "Built by .github/workflows/build-transmission-next-ui.yml from upstream releases; tag <release version>-r<REVISION>. Upstream calls itself early and untested, so minor bumps get a PR.",
+      "tag": "^(?P<v>\\d+\\.\\d+\\.\\d+)-r(?P<r>\\d+)$",
+      "notes": { "github": "hisproc/transmission-next-ui" },
+      "always_review": ["major", "minor"],
+      "automerge": ["patch", "build"]
+    },
     "pocketid/pocket-id": {
       "_comment": "Major releases have migration guides (pocket-id.org/docs/setup/major-releases).",
       "tag": "^v(?P<v>\\d+\\.\\d+\\.\\d+)$",
