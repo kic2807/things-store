@@ -46,7 +46,13 @@ at creation. Umbrel's stop/start and every update **recreate** Transmission
 then no longer even start (`No such container: <old id>`; tested). So the
 watchdog **recreates** the sidecar with the same command umbrelOS uses
 (`docker compose --project-name things-transmission-vpn … up -d --no-deps
---force-recreate tailscale`, this app's own compose file). It reacts to
+--force-recreate tailscale`, this app's own compose file). Once `tailscale0`
+has its address, it restarts `transmission-daemon` inside its container
+(`s6-svc -r /run/service/svc-transmission`): Transmission started before that
+address existed, so its bind from setup step 5 failed, and it does not retry
+(`Couldn't bind port 51413 on 100.x.y.z`, no peer connections). The s6
+restart keeps the container and its namespace, so the sidecar stays
+attached; `docker restart` or the Umbrel Restart would not. It reacts to
 Transmission's `start` event within about a second and also checks every
 3 s (boot order, missed events): if Transmission runs and the sidecar is not
 running or joined to an older Transmission ID, it recreates it. The new
@@ -158,8 +164,11 @@ rejects the project without one.
    The `curl` must fail (rejected), and an active torrent stops. Start both
    again (restart the app) and repeat test 2.
 4. **Reattach after a Transmission restart:** restart the Transmission app;
-   within a few seconds the watchdog logs `recreating`
-   (`sudo docker logs things-transmission-vpn_watchdog_1`). Repeat test 2.
+   within a few seconds the watchdog logs `recreating`, then `tailscale0 up:
+   restarted transmission-daemon`
+   (`sudo docker logs things-transmission-vpn_watchdog_1`). Transmission's
+   log has no `Couldn't bind` line after that, a torrent finds peers, and
+   test 2 still shows Mullvad.
 5. **Reboot** the Umbrel, then repeat test 2.
 6. **Radarr/Sonarr → Transmission** test passes, and the Umbrel UI opens
    Transmission.
@@ -177,6 +186,13 @@ sidecar was attached 13 s after Transmission (before the event-listener fix)
 and ipleak still showed only the Mullvad address; Radarr/Sonarr download
 client test and the Umbrel UI worked. With the sidecar detached, ipleak saw
 the home IP despite `bind-address-ipv4` (tracker announces).
+
+2026-10-21, 1.104.1-5: after Transmission restarts, torrents found no peers:
+Transmission started about 5 s before `tailscale0` and could not bind to the
+Tailscale address (the ipleak test above passed anyway, since announces do
+not use that bind). `s6-svc -r /run/service/svc-transmission` in
+`transmission_server_1` fixed it on the Umbrel (downloads resumed, ipleak
+showed Mullvad); 1.104.1-6 has the watchdog do this after every reattach.
 
 ## Known limits
 

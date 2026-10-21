@@ -53,6 +53,19 @@ services:
           [ -f "$$U" ] && set -- "$$@" -f "$$U"
           set -- "$$@" -f /tmp/app-proxy-stub.yml
           docker compose --project-name things-transmission-vpn "$$@" up -d --no-deps --force-recreate tailscale
+          # Transmission started before tailscale0 existed, so binding to the
+          # Tailscale address (README setup step 5) failed, and it does not
+          # retry: no peer connections. Once the address is up, restart the
+          # daemon inside its container (s6), which keeps the container and
+          # its network namespace, so the sidecar stays attached.
+          i=0
+          until docker exec $$S ip -4 addr show tailscale0 2>/dev/null | grep -q inet; do
+            i=$$((i + 1))
+            if [ $$i -ge 60 ]; then echo "$$(date -Iseconds) tailscale0 has no address after 60 s"; return; fi
+            sleep 1
+          done
+          docker exec $$T /command/s6-svc -r /run/service/svc-transmission \
+            && echo "$$(date -Iseconds) tailscale0 up: restarted transmission-daemon"
         }
         check() {
           mkdir /tmp/lock 2>/dev/null || return 0
