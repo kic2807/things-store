@@ -19,6 +19,13 @@ services:
       PGID: "1000"
       TZ: Asia/Seoul
       STUMP_CONFIG_DIR: /config
+      # Uploads are off by default, and they include setting a series or
+      # book cover from an image file (the upload is rejected otherwise).
+      STUMP_ENABLE_UPLOAD: "true"
+      # Requests come through Caddy (HTTPS) or Umbrel's app_proxy; without
+      # this Stump ignores X-Forwarded-Proto, builds http:// links (OPDS,
+      # Kobo, EPUB) and logs a warning on every request.
+      STUMP_TRUST_PROXY_HEADERS: "true"
     # Optional STUMP_OIDC_* settings (client secret) come from the app data
     # .env file; see .env.example.
     env_file:

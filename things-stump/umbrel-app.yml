@@ -9,7 +9,7 @@ folderAccess:
         targetPath: /data
 category: media
 name: Stump
-version: "nightly-202610202225"
+version: "nightly-202610202225-1"
 tagline: Comics, manga and digital book server with OPDS
 icon: https://raw.githubusercontent.com/kic2807/things-store/main/things-stump/icon.svg
 description: >-
@@ -21,7 +21,7 @@ description: >-
 
   Reader apps use the same address and port. Their endpoints (/opds, /api, /kobo, /koreader) skip Umbrel login and use Stump's own login.
 releaseNotes: >-
-  Updated images: aaronleopold/stump nightly 00fb327d7bc7 -> nightly 76d3a02e7f72.
+  Turns on uploads so a series or book cover can be set from an image file, and trusts the proxy headers from Caddy/Umbrel so Stump builds https links (OPDS, Kobo) and stops logging a warning on every request.
 
 developer: Stump
 website: https://www.stumpapp.dev

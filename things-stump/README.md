@@ -37,6 +37,18 @@ Port **10801** (Stump's default, so reader apps can use their usual setting):
 - Reader endpoints `/opds`, `/api`, `/kobo`, `/koreader` skip Umbrel login and
   use Stump accounts.
 
+Set in `docker-compose.yml`:
+
+- `STUMP_ENABLE_UPLOAD=true`: uploads are off by default, and setting a
+  series or book cover from an image file is an upload (Stump rejects it
+  otherwise). Only the owner, or users given the upload permission, can
+  upload; files up to 20 MB.
+- `STUMP_TRUST_PROXY_HEADERS=true`: Stump is always reached through Caddy or
+  Umbrel's app_proxy, which set `X-Forwarded-Proto`; with it Stump builds
+  `https://` links for `comics.` (OPDS, Kobo, EPUB) and stops logging
+  `Proxy scheme headers present but trust_proxy_headers is false` on every
+  request.
+
 ## Log in with Pocket ID (optional)
 
 1. In Pocket ID, add an OIDC client `Stump` with callback URL
