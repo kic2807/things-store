@@ -102,11 +102,13 @@
 	# 	import tinyauth
 	# 	reverse_proxy prowlarr_server_1:9696
 	# }
+	# Transmission Next UI from things-transmission-vpn; for Transmission's
+	# stock UI use transmission_server_1:9091 instead.
 	# @download host download.example.com
 	# handle @download {
 	# 	import private
 	# 	import tinyauth
-	# 	reverse_proxy transmission_server_1:9091
+	# 	reverse_proxy things-transmission-vpn_web_1:8080
 	# }
 	# SideImpactor: page and its Apple relay on one HTTPS origin (WebUSB).
 	# @sideload host sideload.example.com

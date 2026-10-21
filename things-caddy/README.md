@@ -249,7 +249,7 @@ Alternatives not used (kept for reference):
 | `movies.` | `radarr_server_1:7878` | private + Tinyauth |
 | `shows.` | `sonarr_server_1:8989` | private + Tinyauth |
 | `indexer.` | `prowlarr_server_1:9696` | private + Tinyauth |
-| `download.` | `transmission_server_1:9091` | private + Tinyauth |
+| `download.` | `things-transmission-vpn_web_1:8080` (Transmission Next UI; stock UI: `transmission_server_1:9091`) | private + Tinyauth |
 | `sideload.` | `/wisp/*` → `things-sideimpactor_wisp_1:8080`, rest → `things-sideimpactor_web_1:3000` | private + Tinyauth |
 
 Targets are the official apps' `app_proxy` `APP_HOST`/`APP_PORT` values in

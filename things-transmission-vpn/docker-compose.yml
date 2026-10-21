@@ -6,10 +6,22 @@ version: "3.7"
 # Private ranges (Umbrel apps, Caddy, LAN) stay direct, so the Umbrel UI,
 # Radarr/Sonarr (transmission_server_1:9091) and Caddy keep working.
 #
-# No web UI (Transmission keeps its own icon): no app_proxy, the manifest port
-# is a placeholder.
+# The `web` service serves Transmission Next UI (hisproc/transmission-next-ui)
+# and passes /transmission/rpc to transmission_server_1:9091; this app's icon
+# opens it. Transmission's own icon keeps the stock UI.
 
 services:
+  app_proxy:
+    environment:
+      APP_HOST: things-transmission-vpn_web_1
+      APP_PORT: 8080
+
+  web:
+    # Upstream release files served by Caddy, built in this repo
+    # (.github/workflows/build-transmission-next-ui.yml).
+    image: ghcr.io/kic2807/transmission-next-ui:0.3.4-r1@sha256:34d56064d7fc7080e1b02cb58cb84be02a2cc9cf4f8f7a4ad9e6000de800a526
+    restart: on-failure
+
   # Reattaches the sidecar when Transmission is recreated (Umbrel stop/start,
   # updates) or starts later than this app (boot). Docker stores the joined
   # container by ID, so the sidecar must be recreated, not restarted: the
@@ -32,10 +44,14 @@ services:
       - |
         T=transmission_server_1
         S=things-transmission-vpn_tailscale_1
+        # umbrelOS adds app_proxy's image from its own file; without one,
+        # compose rejects the project. The stub is never started (--no-deps).
+        printf 'services:\n  app_proxy:\n    image: getumbrel/app-proxy\n' > /tmp/app-proxy-stub.yml
         recreate() {
           set -- -f "$$APP_DATA_DIR/docker-compose.yml"
           U="$$APP_DATA_DIR/docker-compose.umbrel-user-settings.yml"
           [ -f "$$U" ] && set -- "$$@" -f "$$U"
+          set -- "$$@" -f /tmp/app-proxy-stub.yml
           docker compose --project-name things-transmission-vpn "$$@" up -d --no-deps --force-recreate tailscale
         }
         check() {

@@ -26,7 +26,7 @@ The apps show up under **Haus Things App Store**.
 | [things-pocket-id](things-pocket-id/README.md) | 2.18.0 | — (30105 placeholder) | Passkey-only sign-in (OIDC provider) at `id.<domain>`. | `.env` + key file, then web setup |
 | [things-tinyauth](things-tinyauth/README.md) | 5.2.0 | — (30106 placeholder) | Pocket ID login in front of the private apps (Caddy forward auth) at `login.<domain>:30443`. | `.env` |
 | [things-gitea-act-runner](things-gitea-act-runner/README.md) | 5.1.0 | — (30102 placeholder) | Gitea Actions runner with its own Docker-in-Docker. No web UI. **Not used: needs a Gitea server, which this setup no longer has. Do not install.** Kept just in case. | `.env` |
-| [things-transmission-vpn](things-transmission-vpn/README.md) | 1.104.1 | — (30107 placeholder) | Add-on for the official Transmission app: Mullvad exit node + kill switch via a Tailscale sidecar. No web UI. Uses the Docker socket (watchdog). | `.env` |
+| [things-transmission-vpn](things-transmission-vpn/README.md) | 1.104.1 | 30107 | Add-on for the official Transmission app: Mullvad exit node + kill switch via a Tailscale sidecar, and Transmission Next UI as its web UI. Uses the Docker socket (watchdog). | `.env` |
 | [things-stump](things-stump/README.md) | nightly | 10801 | Comics, manga and ebook server (OPDS, Kobo/KOReader sync), nightly builds. | none (optional `.env` for OIDC) |
 | [things-sideimpactor](things-sideimpactor/README.md) | 2026.0729.0513 | — (30108 placeholder) | Sign and install IPA files on an iPhone from the browser (WebUSB), with an Apple-only Wisp relay. HTTPS via Caddy only. | none |
 | [things-band-backup](things-band-backup/README.md) | 2.5.0 | — (30103 placeholder) | BAND → Immich backup and schedule-photo → calendar bot. No web UI. | `.env` |

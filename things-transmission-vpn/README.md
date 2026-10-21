@@ -10,8 +10,9 @@ sidecar that joins Transmission's network namespace.
   (`transmission_server_1:9091`) and Caddy keep working.
 - Nothing else on the Umbrel is affected.
 
-No web UI: keep using the Transmission icon. The manifest port 30107 is a
-placeholder.
+Its web UI is [Transmission Next UI](https://github.com/hisproc/transmission-next-ui)
+for the same Transmission: this app's icon (port 30107) opens it, and
+Transmission's own icon keeps the stock UI. See [Web UI](#web-ui).
 
 ## How it works
 
@@ -19,6 +20,7 @@ placeholder.
 |---------|-------|------|
 | `tailscale` | `tailscale/tailscale` | `network_mode: "container:transmission_server_1"`; kill switch, then Tailscale, then the exit node |
 | `watchdog` | `docker:cli` | reattaches `tailscale` when Transmission is recreated or starts later; **uses the Docker socket** |
+| `web` | `ghcr.io/kic2807/transmission-next-ui` | Transmission Next UI; passes `/transmission/rpc` to `transmission_server_1:9091` |
 
 **Kill switch.** Before tailscaled starts, the sidecar puts a `KILLSWITCH`
 chain into Transmission's `OUTPUT` (filter table; Docker's DNS rules in the
@@ -63,6 +65,28 @@ It does **not** cover tracker announces, which Transmission sends over HTTP
 without that binding: in a test with the sidecar detached, ipleak.net still
 saw the home IP. Keep it as an extra layer, not as the protection. See setup
 step 5.
+
+## Web UI
+
+`web` serves the release files of
+[hisproc/transmission-next-ui](https://github.com/hisproc/transmission-next-ui)
+with Caddy (image built in this repo by
+`.github/workflows/build-transmission-next-ui.yml`, tag
+`<release>-r<revision>`). The page calls `/transmission/rpc` on its own
+address, which Caddy passes to `transmission_server_1:9091` with that Host
+header (the one Radarr/Sonarr use). It is the same Transmission, so torrents,
+settings and the VPN are shared with the stock UI.
+
+- Home screen: this app's icon, behind the Umbrel login.
+- Outside: things-caddy's `download.` host →
+  `things-transmission-vpn_web_1:8080` (private + Tinyauth, see the
+  Caddyfile example).
+- Upstream calls the project early and not fully tested. Minor and major
+  updates get a PR to review; patches merge automatically.
+
+The watchdog's own `docker compose` call adds a stub `app_proxy` image:
+umbrelOS supplies that service's image from its own file, and compose
+rejects the project without one.
 
 ## Setup
 
@@ -139,6 +163,9 @@ step 5.
 5. **Reboot** the Umbrel, then repeat test 2.
 6. **Radarr/Sonarr → Transmission** test passes, and the Umbrel UI opens
    Transmission.
+7. **Web UI:** this app's icon opens Transmission Next UI and lists the same
+   torrents; `https://download.<domain>:30443` does too once Caddy points
+   there. Then repeat test 4 (the watchdog still recreates the sidecar).
 
 ## Test results
 
