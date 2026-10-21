@@ -55,6 +55,12 @@
       "always_review": ["major", "minor"],
       "automerge": ["patch", "build"]
     },
+    "ghcr.io/immich-app/immich-machine-learning": {
+      "_comment": "OpenVINO variant for things-immich-ml. Must match the version of Umbrel's official Immich app, so every update is a PR: merge it once Umbrel's Immich has the same version.",
+      "tag": "^v(?P<v>\\d+\\.\\d+\\.\\d+)-openvino$",
+      "notes": { "github": "immich-app/immich" },
+      "always_review": ["major", "minor", "patch"]
+    },
     "pocketid/pocket-id": {
       "_comment": "Major releases have migration guides (pocket-id.org/docs/setup/major-releases).",
       "tag": "^v(?P<v>\\d+\\.\\d+\\.\\d+)$",
@@ -85,6 +91,7 @@
     "things-tinyauth": { "primary": "ghcr.io/tinyauthapp/tinyauth" },
     "things-transmission-vpn": { "primary": "tailscale/tailscale" },
     "things-stump": { "primary": "aaronleopold/stump" },
-    "things-sideimpactor": { "primary": "ghcr.io/kic2807/sideimpactor" }
+    "things-sideimpactor": { "primary": "ghcr.io/kic2807/sideimpactor" },
+    "things-immich-ml": { "primary": "ghcr.io/immich-app/immich-machine-learning" }
   }
 }

@@ -1,0 +1,32 @@
+manifestVersion: 1
+id: things-immich-ml
+category: files
+name: Immich ML (Intel GPU)
+version: "3.3.4"
+tagline: Run Immich's machine learning on the Intel GPU
+icon: https://raw.githubusercontent.com/kic2807/things-store/main/things-immich-ml/icon.svg
+description: >-
+  Add-on for the official Umbrel Immich app. Umbrel's Immich runs face recognition and smart search on the CPU; this app runs the same Immich machine-learning service with OpenVINO on an Intel GPU (Intel UHD/Iris Xe/Arc, e.g. N100/N150).
+
+
+  No web UI. After installing, open Immich → Administration → Settings → Machine Learning Settings and add http://things-immich-ml_server_1:3003 as the first URL, keeping http://immich_machine-learning_1:3003 below it as a fallback. See the README in the store repository.
+releaseNotes: ""
+
+developer: Immich
+website: https://immich.app
+dependencies:
+  - immich
+permissions:
+  - GPU
+repo: https://github.com/kic2807/things-store
+support: https://github.com/kic2807/things-store/issues
+
+port: 30109
+gallery: []
+path: ""
+
+defaultUsername: ""
+defaultPassword: ""
+
+submitter: kic2807
+submission: https://github.com/kic2807/things-store

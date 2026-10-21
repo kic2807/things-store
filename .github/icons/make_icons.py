@@ -14,7 +14,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 SRC = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/{}.svg"
 
-# app folder: (dashboard-icons name, background, logo size as share of 256)
+# app folder: (dashboard-icons name or full SVG URL, background, logo size as share of 256)
 ICONS = {
     "things-caddy": ("caddy", "#ffffff", 0.72),
     "things-cloudflare-ddns": ("cloudflare", "#1d2230", 0.74),
@@ -24,6 +24,7 @@ ICONS = {
     "things-transmission-vpn": ("private-internet-access", "#ffffff", 0.68),
     "things-gitea-act-runner": ("gitea", "#ffffff", 0.74),
     "things-sideimpactor": ("apple", "#ffffff", 0.6),
+    "things-immich-ml": ("https://cdn.jsdelivr.net/gh/selfhst/icons/svg/immich-light.svg", "#4250af", 0.66),
 }
 
 
@@ -52,7 +53,8 @@ def wrap(svg: str, background: str, share: float) -> str:
 for app, (name, background, share) in ICONS.items():
     if not (ROOT / app).is_dir():
         continue
-    with urllib.request.urlopen(SRC.format(name), timeout=30) as resp:
+    url = name if name.startswith("https://") else SRC.format(name)
+    with urllib.request.urlopen(url, timeout=30) as resp:
         svg = resp.read().decode()
     (ROOT / app / "icon.svg").write_text(wrap(svg, background, share))
-    print(f"{app}/icon.svg  <- {name} on {background}")
+    print(f"{app}/icon.svg  <- {url} on {background}")

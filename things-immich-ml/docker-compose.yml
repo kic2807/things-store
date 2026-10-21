@@ -1,0 +1,18 @@
+version: "3.7"
+
+# Immich machine learning with Intel GPU acceleration (OpenVINO), for the
+# official Umbrel Immich app. Umbrel's Immich ships the CPU-only image; this
+# app runs the -openvino variant of the same version and Immich is pointed at
+# it in Administration → Settings → Machine Learning (built-in container kept
+# as fallback). The manifest's GPU permission makes umbrelOS map /dev/dri and
+# the render group into the container, as it does for Immich.
+#
+# No web UI: no app_proxy, the manifest port is a placeholder.
+
+services:
+  server:
+    # Keep the version equal to Umbrel's Immich (immich_server_1).
+    image: ghcr.io/immich-app/immich-machine-learning:v3.3.4-openvino@sha256:dd558de9694484185e47cbd35d8caa7da1aa46766f65d4f6ab011a1a0d51f781
+    restart: on-failure
+    volumes:
+      - ${APP_DATA_DIR}/data/model-cache:/cache
