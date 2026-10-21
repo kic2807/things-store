@@ -44,7 +44,14 @@ render group to the container (as for Immich). Upstream's OpenVINO setup
    sudo docker logs things-immich-ml_server_1 2>&1 | grep -i -E "provider|openvino|error" | tail
    ```
 
-   The model loads should list `OpenVINOExecutionProvider`. The built-in
+   The model loads should list `OpenVINOExecutionProvider`. Give it a few
+   minutes: each model is first downloaded and compiled for the GPU
+   (`Preparing … for OpenVINOExecutionProvider`, about 30 s each, on the
+   CPU), so CPU load stays high and the GPU idle until that is done. The
+   compiled models are cached in `data/model-cache`, so later starts are
+   quick. The log looks the same if OpenVINO cannot open the GPU (it then
+   runs on the CPU); to check, the device list must include `GPU`:
+   `sudo docker exec things-immich-ml_server_1 python -c "import onnxruntime as o; print(o.capi._pybind_state.get_available_openvino_device_ids())"`. The built-in
    container should stay idle:
    `sudo docker logs --since 5m immich_machine-learning_1` shows no new
    model loads.
@@ -57,6 +64,12 @@ store's update job opens a PR for every new Immich release and never merges
 it on its own: merge it once Umbrel's Immich has the same version. If the
 versions drift apart and Immich's ML requests fail, Immich falls back to its
 own CPU container.
+
+## Test results
+
+2026-10-22, Intel Alder Lake-N, 3.3.4: umbrelOS mapped `/dev/dri`; face
+detection and recognition and smart search ran on the GPU once the models
+were compiled (a few minutes after the first job).
 
 ## Known limits
 
