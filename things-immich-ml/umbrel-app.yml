@@ -2,7 +2,7 @@ manifestVersion: 1
 id: things-immich-ml
 category: files
 name: Immich ML (Intel GPU)
-version: "3.3.4"
+version: "3.3.5"
 tagline: Run Immich's machine learning on the Intel GPU
 icon: https://raw.githubusercontent.com/kic2807/things-store/main/things-immich-ml/icon.svg
 description: >-
@@ -10,7 +10,8 @@ description: >-
 
 
   No web UI. After installing, open Immich → Administration → Settings → Machine Learning Settings and add http://things-immich-ml_server_1:3003 as the first URL, keeping http://immich_machine-learning_1:3003 below it as a fallback. See the README in the store repository.
-releaseNotes: ""
+releaseNotes: >-
+  Updated images: ghcr.io/immich-app/immich-machine-learning v3.3.4-openvino -> v3.3.5-openvino.
 
 developer: Immich
 website: https://immich.app
