@@ -2,7 +2,7 @@ manifestVersion: 1
 id: things-cloudflare-ddns
 category: networking
 name: Cloudflare DDNS
-version: "1.17.1-2"
+version: "1.18.0"
 tagline: Keep Cloudflare DNS records pointed at this server's public IP
 icon: https://raw.githubusercontent.com/kic2807/things-store/main/things-cloudflare-ddns/icon.svg
 description: >-
@@ -11,7 +11,7 @@ description: >-
 
   Before starting, create the .env file described in the store README (CLOUDFLARE_API_TOKEN, DOMAINS, optionally PROXIED) in the app data folder, then restart the app.
 releaseNotes: >-
-  New square app icon (matches the other Umbrel apps). No other changes.
+  Updated images: favonia/cloudflare-ddns 1.17.1 -> 1.18.0.
 
 developer: favonia
 website: https://github.com/favonia/cloudflare-ddns

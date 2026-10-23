@@ -5,7 +5,7 @@ version: "3.7"
 
 services:
   ddns:
-    image: favonia/cloudflare-ddns:1.17.1@sha256:5e61736b982b87d84a1120b4767c4deff0f2cc55ca3ee9dcb1dc58623039b5cb
+    image: favonia/cloudflare-ddns:1.18.0@sha256:345b41895a8846d74c62d30bd27e61101a754f8ab8da10c68115823883803afb
     # Host networking so the updater sees the host's real public IP stack
     # (upstream's recommended setup; needed if IPv6 is ever enabled).
     network_mode: host
