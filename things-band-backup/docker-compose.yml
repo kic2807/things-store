@@ -5,7 +5,7 @@ version: "3.7"
 
 services:
   server:
-    image: ghcr.io/kic2807/band-backup:2.5.0@sha256:1b6c9280527710e8c2abca24b4f19e13f2dbc233c9383b4fbad493dcccd43c7d
+    image: ghcr.io/kic2807/band-backup:2.5.1@sha256:98c90f26546aeed6821eaea3265c0b2a42d57a1c4a572b27251a6f7b6517b237
     restart: on-failure
     # Reaps the headless Chromium processes Playwright starts for BAND login.
     init: true

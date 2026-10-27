@@ -2,7 +2,7 @@ manifestVersion: 1
 id: things-band-backup
 category: automation
 name: BAND Backup
-version: "2.5.0"
+version: "2.5.1"
 tagline: Back up BAND photos to Immich and turn schedule photos into events
 icon: https://raw.githubusercontent.com/kic2807/things-store/main/things-band-backup/icon.png
 description: >-
@@ -13,7 +13,7 @@ description: >-
 
 
   Before starting, create the .env file described in the store README in the app data folder, then restart the app.
-releaseNotes: "Old BAND photos on sos.campmobile.net now download (they failed with a certificate error), and photos given up on for that reason are retried. Adds --self-test."
+releaseNotes: "BAND sessions are renewed automatically, so you no longer have to approve a new login (2FA) every few days."
 
 developer: kic2807
 website: https://github.com/kic2807/band-backup
