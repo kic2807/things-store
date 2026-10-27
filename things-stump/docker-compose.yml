@@ -11,7 +11,7 @@ services:
       PROXY_AUTH_WHITELIST: "/api/*,/opds/*,/kobo/*,/koreader/*"
 
   server:
-    image: aaronleopold/stump:nightly@sha256:c5c8664b1e3d09d7f4ed2a41e98f246f05db9532b738b0a2bcdb350b4b7019f2
+    image: aaronleopold/stump:nightly@sha256:58ed4f54c5c8de6df37f780c3c1640aa28d17e0c6be0f4da29579f05695aedbb
     restart: on-failure
     environment:
       # The entrypoint creates this user and chowns /config.
