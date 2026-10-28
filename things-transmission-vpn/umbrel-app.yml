@@ -2,7 +2,7 @@ manifestVersion: 1
 id: things-transmission-vpn
 category: networking
 name: Transmission VPN
-version: "1.104.2"
+version: "1.104.4"
 tagline: Route the official Transmission app through a Mullvad exit node
 icon: https://raw.githubusercontent.com/kic2807/things-store/main/things-transmission-vpn/icon.svg
 description: >-
@@ -11,7 +11,7 @@ description: >-
 
   This app's icon opens Transmission Next UI, a modern web interface for the same Transmission (labels, tracker filter, batch moves, dark mode); Transmission's own icon keeps the stock interface. Create ~/umbrel/app-data/things-transmission-vpn/data/.env (TS_AUTHKEY, EXIT_NODE) before installing. A watchdog service uses the Docker socket to recreate the sidecar when Transmission is recreated; see the README in the store repository.
 releaseNotes: >-
-  Updated images: docker 29.9.1-cli -> 29.9.2-cli. tailscale/tailscale v1.104.1 -> v1.104.2.
+  Updated images: tailscale/tailscale v1.104.2 -> v1.104.4.
 
 developer: Tailscale
 website: https://tailscale.com
