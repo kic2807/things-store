@@ -25,6 +25,7 @@ ICONS = {
     "things-gitea-act-runner": ("gitea", "#ffffff", 0.74),
     "things-sideimpactor": ("apple", "#ffffff", 0.6),
     "things-immich-ml": ("https://cdn.jsdelivr.net/gh/selfhst/icons/svg/immich-light.svg", "#4250af", 0.66),
+    "things-cleanuparr": ("https://raw.githubusercontent.com/Cleanuparr/Cleanuparr/main/Logo/logo.svg", "#efe6f7", 0.8),
 }
 
 

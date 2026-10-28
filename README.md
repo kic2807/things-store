@@ -31,6 +31,7 @@ The apps show up under **Haus Things App Store**.
 | [things-sideimpactor](things-sideimpactor/README.md) | 2026.0729.0513 | — (30108 placeholder) | Sign and install IPA files on an iPhone from the browser (WebUSB), with an Apple-only Wisp relay. HTTPS via Caddy only. | none |
 | [things-band-backup](things-band-backup/README.md) | 2.5.0 | — (30103 placeholder) | BAND → Immich backup and schedule-photo → calendar bot. No web UI. | `.env` |
 | [things-immich-ml](things-immich-ml/README.md) | 3.3.4 | — (30109 placeholder) | Immich machine learning on the Intel GPU (OpenVINO), for the official Immich app. No web UI. | Immich ML URL setting |
+| [things-cleanuparr](things-cleanuparr/README.md) | 2.10.12 | 30110 | Removes stalled and failed downloads from the Sonarr/Radarr queues, blocklists them and searches again (Transmission). | web setup |
 
 "No web UI" apps have no `app_proxy`; the manifest port is only a placeholder
 and opening them from the home screen shows nothing. Check them with
@@ -120,6 +121,7 @@ needed, just **Merge**). A change needs review when:
 | pocketid/pocket-id | GitHub releases | major | minor, patch |
 | ghcr.io/tinyauthapp/tinyauth | GitHub releases | major | patch |
 | ghcr.io/immich-app/immich-machine-learning (`-openvino`) | immich-app/immich releases | every update (match Umbrel's Immich) | — |
+| ghcr.io/cleanuparr/cleanuparr | GitHub releases | major, minor (minor releases can be breaking) | patch |
 | ghcr.io/kic2807/caddy-cloudflare | caddyserver/caddy releases | major | patch, plugin-only rebuild |
 
 ### caddy-cloudflare image

@@ -1,0 +1,27 @@
+version: "3.7"
+
+# Cleanuparr: removes stalled, metadata-stuck and failed-import downloads
+# from the Sonarr/Radarr queues, blocklists them and searches again. It
+# reaches Sonarr, Radarr and Transmission by container name over Umbrel's
+# network; everything is configured in its web UI (stored in data/config).
+
+services:
+  app_proxy:
+    environment:
+      APP_HOST: things-cleanuparr_server_1
+      APP_PORT: 11011
+
+  server:
+    # Minor releases can be breaking (database changes, no rollback), so
+    # minor updates are reviewed; back up data/config before merging one.
+    image: ghcr.io/cleanuparr/cleanuparr:2.10.12@sha256:d0212e4c66bd0522e23c5e5da5d3006bd5ff0e0de1e3ecfcf892e039d55721e2
+    restart: on-failure
+    environment:
+      # The entrypoint starts as root, chowns /config and drops to PUID:PGID.
+      PUID: "1000"
+      PGID: "1000"
+      TZ: Asia/Seoul
+      PORT: "11011"
+    volumes:
+      # Settings, SQLite database, logs
+      - ${APP_DATA_DIR}/data/config:/config

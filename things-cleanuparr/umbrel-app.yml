@@ -1,0 +1,29 @@
+manifestVersion: 1
+id: things-cleanuparr
+category: media
+name: Cleanuparr
+version: "2.10.12"
+tagline: Remove stalled downloads and search for replacements
+icon: https://raw.githubusercontent.com/kic2807/things-store/main/things-cleanuparr/icon.svg
+description: >-
+  Cleanuparr watches the Sonarr and Radarr queues and removes downloads that are stuck: stalled torrents, torrents stuck downloading metadata, and downloads that fail to import. It blocklists the release in Sonarr/Radarr and starts a new search, so a better release is picked without you doing it by hand. It can also search for missing items and quality upgrades, and block malicious files.
+
+
+  On first open, create the Cleanuparr account. Then add Sonarr (http://sonarr_server_1:8989), Radarr (http://radarr_server_1:7878) and Transmission (http://transmission_server_1:9091, URL base "transmission") and turn on the Queue Cleaner. See the README in the store repository.
+releaseNotes: ""
+
+developer: Cleanuparr
+website: https://cleanuparr.github.io/Cleanuparr/
+dependencies: []
+repo: https://github.com/Cleanuparr/Cleanuparr
+support: https://github.com/Cleanuparr/Cleanuparr/issues
+
+port: 30110
+gallery: []
+path: ""
+
+defaultUsername: ""
+defaultPassword: ""
+
+submitter: kic2807
+submission: https://github.com/kic2807/things-store

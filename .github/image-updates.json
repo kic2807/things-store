@@ -75,6 +75,13 @@
       "always_review": ["major"],
       "automerge": ["patch"]
     },
+    "ghcr.io/cleanuparr/cleanuparr": {
+      "_comment": "Upstream versioning: a minor release is breaking (database changes, no rollback); patches are fixes and compatible features.",
+      "tag": "^(?P<v>\\d+\\.\\d+\\.\\d+)$",
+      "notes": { "github": "Cleanuparr/Cleanuparr" },
+      "always_review": ["major", "minor"],
+      "automerge": ["patch"]
+    },
     "ghcr.io/kic2807/caddy-cloudflare": {
       "_comment": "Built by .github/workflows/build-caddy.yml. Tag <caddy>-cf<caddy-dns/cloudflare>; a plugin-only change is a 'build' bump. Caddy flags breaking changes in its release notes.",
       "tag": "^(?P<v>\\d+\\.\\d+\\.\\d+)-cf(?P<cf1>\\d+)\\.(?P<cf2>\\d+)\\.(?P<cf3>\\d+)$",
@@ -92,6 +99,7 @@
     "things-transmission-vpn": { "primary": "tailscale/tailscale" },
     "things-stump": { "primary": "aaronleopold/stump" },
     "things-sideimpactor": { "primary": "ghcr.io/kic2807/sideimpactor" },
-    "things-immich-ml": { "primary": "ghcr.io/immich-app/immich-machine-learning" }
+    "things-immich-ml": { "primary": "ghcr.io/immich-app/immich-machine-learning" },
+    "things-cleanuparr": { "primary": "ghcr.io/cleanuparr/cleanuparr" }
   }
 }
