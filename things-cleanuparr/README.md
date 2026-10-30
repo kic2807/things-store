@@ -40,8 +40,10 @@ Port **30110** (behind Umbrel login). Cleanuparr also has its own account.
    - add a **Stalled Download Rule**: privacy type *Public Torrents Only*,
      completion 0–100 %, *Max Strikes* 12 (about an hour without progress),
      *Reset Strikes on Progress* on
-   - **Downloading Metadata Max Strikes**: 6
-   - **Failed Import** *Max Strikes*: 3
+   - on the Queue Cleaner page itself: **Failed Import** → *Max Strikes* 3,
+     **Errored Downloads** → *Max Strikes* 3 (Cleanuparr resumes the
+     download on each strike first). Leave **Downloading Metadata** off: it
+     only works with qBittorrent.
 6. Optional: **Seeker** (search for missing items and upgrades on a
    schedule), **Malware Blocker** (removes torrents containing blocked file
    types such as `.exe`), **Notifications** (Discord, ntfy, …).
