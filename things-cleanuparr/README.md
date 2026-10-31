@@ -71,4 +71,6 @@ are merged automatically.
 
 ## Test results
 
-Not tested on the Umbrel yet.
+2026-11-01, 2.10.12 with the official Sonarr, Radarr and Transmission apps
+(Transmission through things-transmission-vpn): connections work, stalled
+downloads are removed, blocklisted and searched again without manual help.
