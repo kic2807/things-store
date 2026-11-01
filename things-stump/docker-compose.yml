@@ -26,8 +26,7 @@ services:
       # this Stump ignores X-Forwarded-Proto, builds http:// links (OPDS,
       # Kobo, EPUB) and logs a warning on every request.
       STUMP_TRUST_PROXY_HEADERS: "true"
-    # Optional STUMP_OIDC_* settings (client secret) come from the app data
-    # .env file; see .env.example.
+    # Optional extra STUMP_* settings come from the app data .env file.
     env_file:
       - path: ${APP_DATA_DIR}/data/.env
         required: false

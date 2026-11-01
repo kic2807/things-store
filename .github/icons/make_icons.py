@@ -19,8 +19,6 @@ ICONS = {
     "things-caddy": ("caddy", "#ffffff", 0.72),
     "things-cloudflare-ddns": ("cloudflare", "#1d2230", 0.74),
     "things-stump": ("stump", "#f4e6de", 1.0),
-    "things-pocket-id": ("pocket-id", "#000000", 1.0),
-    "things-tinyauth": ("tinyauth", "#eef3f8", 0.74),
     "things-transmission-vpn": ("private-internet-access", "#ffffff", 0.68),
     "things-gitea-act-runner": ("gitea", "#ffffff", 0.74),
     "things-sideimpactor": ("apple", "#ffffff", 0.6),

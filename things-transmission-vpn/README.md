@@ -85,7 +85,7 @@ settings and the VPN are shared with the stock UI.
 
 - Home screen: this app's icon, behind the Umbrel login.
 - Outside: things-caddy's `download.` host →
-  `things-transmission-vpn_web_1:8080` (private + Tinyauth, see the
+  `things-transmission-vpn_web_1:8080` (private, LAN/Tailscale only, see the
   Caddyfile example).
 - Upstream calls the project early and not fully tested. Minor and major
   updates get a PR to review; patches merge automatically.

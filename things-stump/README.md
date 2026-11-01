@@ -19,7 +19,7 @@ back to the 0.1.x release with the same data.
 |---|---|---|
 | `config/` | `/config` | database, thumbnails, logs |
 | Umbrel `Downloads/comics` (default) | `/data` | your library files |
-| `.env` (optional) | env | OIDC settings |
+| `.env` (optional) | env | extra `STUMP_*` settings |
 
 Change the library folder in Umbrel: right-click Stump → Settings → Folder
 access → **Comics**. Any folder (Home, external drive, network share) works.
@@ -49,16 +49,8 @@ Set in `docker-compose.yml`:
   `Proxy scheme headers present but trust_proxy_headers is false` on every
   request.
 
-## Log in with Pocket ID (optional)
+## Public address
 
-1. In Pocket ID, add an OIDC client `Stump` with callback URL
-   `https://comics.<domain>/api/v2/auth/oidc/callback` and the `admins` group
-   (see things-pocket-id README → Connecting apps).
-2. Create `~/umbrel/app-data/things-stump/data/.env` from `.env.example` with the
-   client ID and secret, `chmod 600`, restart Stump.
-3. Stump is served at `https://comics.<domain>` (Caddy host `comics.` →
-   `things-stump_server_1:10801`, already in the Caddyfile example; add
-   `comics.<domain>` to cloudflare-ddns `DOMAINS`).
-
-See [Stump's OIDC guide](https://www.stumpapp.dev/docs/guides/access-control/oidc)
-for `STUMP_OIDC_DISABLE_LOCAL_AUTH` and other options.
+Stump is served at `https://comics.<domain>` (Caddy host `comics.` →
+`things-stump_server_1:10801`, already in the Caddyfile example; add
+`comics.<domain>` to cloudflare-ddns `DOMAINS`).

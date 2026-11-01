@@ -61,20 +61,6 @@
       "notes": { "github": "immich-app/immich" },
       "always_review": ["major", "minor", "patch"]
     },
-    "pocketid/pocket-id": {
-      "_comment": "Major releases have migration guides (pocket-id.org/docs/setup/major-releases).",
-      "tag": "^v(?P<v>\\d+\\.\\d+\\.\\d+)$",
-      "notes": { "github": "pocket-id/pocket-id" },
-      "always_review": ["major"],
-      "automerge": ["minor", "patch"]
-    },
-    "ghcr.io/tinyauthapp/tinyauth": {
-      "_comment": "Major releases have breaking-update guides (tinyauth.app/docs/breaking-updates).",
-      "tag": "^v(?P<v>\\d+\\.\\d+\\.\\d+)$",
-      "notes": { "github": "tinyauthapp/tinyauth" },
-      "always_review": ["major"],
-      "automerge": ["patch"]
-    },
     "ghcr.io/cleanuparr/cleanuparr": {
       "_comment": "Upstream versioning: a minor release is breaking (database changes, no rollback); patches are fixes and compatible features.",
       "tag": "^(?P<v>\\d+\\.\\d+\\.\\d+)$",
@@ -94,8 +80,6 @@
     "things-cloudflare-ddns": { "primary": "favonia/cloudflare-ddns" },
     "things-gitea-act-runner": { "primary": "gitea/runner" },
     "things-caddy": { "primary": "ghcr.io/kic2807/caddy-cloudflare" },
-    "things-pocket-id": { "primary": "pocketid/pocket-id" },
-    "things-tinyauth": { "primary": "ghcr.io/tinyauthapp/tinyauth" },
     "things-transmission-vpn": { "primary": "tailscale/tailscale" },
     "things-stump": { "primary": "aaronleopold/stump" },
     "things-sideimpactor": { "primary": "ghcr.io/kic2807/sideimpactor" },

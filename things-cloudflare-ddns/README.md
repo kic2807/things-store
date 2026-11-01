@@ -29,13 +29,13 @@ sudo docker inspect --format '{{range .Config.Env}}{{println .}}{{end}}' things-
 ### Proxied or DNS only
 
 `PROXIED` decides which records go through Cloudflare's proxy (orange cloud).
-Here only Pocket ID is proxied:
+Here nothing is proxied (`PROXIED` unset). To proxy one host:
 
 ```
-PROXIED=is(id.example.com)
+PROXIED=is(photos.example.com)
 ```
 
-Everything else is DNS only (grey cloud), i.e. reached directly at the home
+DNS only (grey cloud), i.e. reached directly at the home
 IP. On the Free plan Cloudflare serves Korea from overseas locations (often
 LA or Tokyo), which makes proxied photo/video apps slow; Cloudflare's terms
 also limit serving heavy media through the proxy. Grey hosts expose the home
@@ -45,8 +45,7 @@ IP and need the router's NAT hairpin to work from inside the LAN.
 records keep their status; switch them in the Cloudflare dashboard (DNS →
 Records → Edit → proxy status).
 
-`DOMAINS` holds the **public** hosts only (Pocket ID `id.`, `photos.`,
-`watch.`, …; Tinyauth's `login.` is private). The private hosts are separate DNS-only records (see
+`DOMAINS` holds the **public** hosts only (`photos.`, `watch.`, …). The private hosts are separate DNS-only records (see
 things-caddy README). Add a hostname here before opening it in a browser, or
 the router may cache "does not exist" for a while.
 

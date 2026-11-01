@@ -8,8 +8,7 @@ Proxy Manager:
   Cloudflare DNS challenge,
 - passes requests straight to the app containers over the Umbrel Docker
   network (not through Umbrel's `app_proxy`, which would add Umbrel login),
-- protects private apps with `forward_auth` through Tinyauth (sign-in with
-  Pocket ID passkeys).
+- limits private apps to LAN and Tailscale clients (`(private)` snippet).
 
 Image: `ghcr.io/kic2807/caddy-cloudflare`, the official Caddy image plus the
 [caddy-dns/cloudflare](https://github.com/caddy-dns/cloudflare) module, built
@@ -107,8 +106,8 @@ The `(private)` snippet only lets in clients whose address (`remote_ip`) is in
 `LAN_CIDR` or is `10.21.0.1` (see "What Caddy sees" below). That only works if
 outside clients reach Caddy with their real address. If they arrived as a
 gateway address instead, outside requests could look like local ones. **Do not enable movies/shows/indexer/download
-until all three checks pass.** Tinyauth (Pocket ID passkey sign-in) still
-protects them if this check ever fails, but it must not be the only protection.
+until all three checks pass.** This check is the only thing keeping them off
+the internet: Transmission has no login of its own.
 
 The example has an `ipcheck.<domain>` host that uses `(private)` and answers
 with the address Caddy sees.
@@ -165,7 +164,7 @@ would show the real `100.x` address but also changes all forwarded tailnet
 traffic, including the Umbrel's exit node use, so it is not done.
 
 Consequence: `(private)` cannot tell Tailscale clients from processes on the
-Umbrel itself; both are trusted. Tinyauth still asks for a login.
+Umbrel itself; both are trusted.
 
 ## If Caddy sees 172.x
 
@@ -205,8 +204,7 @@ https://movies.<domain>:30443
 
 umbrelOS itself listens on 443 on the LAN (`lan-ingress.ts` in the umbrelOS
 source), so `https://movies.<domain>` without the port would reach the Umbrel
-dashboard instead of Caddy. The wildcard certificate is valid on any port, and
-Tinyauth's session cookie (set for `<domain>`) is sent on any port.
+dashboard instead of Caddy. The wildcard certificate is valid on any port.
 
 DNS for the private hosts: DNS-only (grey cloud) A records in Cloudflare,
 added by hand (not in cloudflare-ddns, which would overwrite them with the WAN
@@ -239,18 +237,16 @@ Alternatives not used (kept for reference):
 
 | Host | Target | Access |
 |------|--------|--------|
-| `id.` | `things-pocket-id_server_1:1411` | public (Pocket ID) |
-| `login.` | `things-tinyauth_server_1:3000` | Tinyauth; opened on `:30443` from LAN/Tailscale (DNS-only record, like the private hosts) |
-| `photos.` | `immich_server_1:2283` | public, Immich login / OIDC |
-| `watch.` | `jellyfin_server_1:8096` | public, Jellyfin login / OIDC |
-| `games.` | `romm_server_1:8080` | public, RomM login / OIDC |
+| `photos.` | `immich_server_1:2283` | public, Immich login |
+| `watch.` | `jellyfin_server_1:8096` | public, Jellyfin login |
+| `games.` | `romm_server_1:8080` | public, RomM login |
 | `requests.` | `jellyseerr_server_1:5055` | public, Jellyseerr login |
-| `comics.` | `things-stump_server_1:10801` | public, Stump login / OIDC (OPDS, Kobo, KOReader) |
-| `movies.` | `radarr_server_1:7878` | private + Tinyauth |
-| `shows.` | `sonarr_server_1:8989` | private + Tinyauth |
-| `indexer.` | `prowlarr_server_1:9696` | private + Tinyauth |
-| `download.` | `things-transmission-vpn_web_1:8080` (Transmission Next UI; stock UI: `transmission_server_1:9091`) | private + Tinyauth |
-| `sideload.` | `/wisp/*` → `things-sideimpactor_wisp_1:8080`, rest → `things-sideimpactor_web_1:3000` | private + Tinyauth |
+| `comics.` | `things-stump_server_1:10801` | public, Stump login (OPDS, Kobo, KOReader) |
+| `movies.` | `radarr_server_1:7878` | private, Radarr login |
+| `shows.` | `sonarr_server_1:8989` | private, Sonarr login |
+| `indexer.` | `prowlarr_server_1:9696` | private, Prowlarr login |
+| `download.` | `things-transmission-vpn_web_1:8080` (Transmission Next UI; stock UI: `transmission_server_1:9091`) | private, no login |
+| `sideload.` | `/wisp/*` → `things-sideimpactor_wisp_1:8080`, rest → `things-sideimpactor_web_1:3000` | private, no login |
 
 Targets are the official apps' `app_proxy` `APP_HOST`/`APP_PORT` values in
 [getumbrel/umbrel-apps](https://github.com/getumbrel/umbrel-apps) (checked

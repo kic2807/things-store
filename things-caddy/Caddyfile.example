@@ -23,13 +23,6 @@
 	}
 }
 
-# Private apps: Tinyauth checks the session and sends visitors to Pocket ID.
-(tinyauth) {
-	forward_auth things-tinyauth_server_1:3000 {
-		uri /api/auth/caddy
-	}
-}
-
 # Only LAN and Tailscale clients (README → "Client IP test").
 # - LAN_CIDR (.env): LAN clients keep their own address.
 # - 10.21.0.1: the umbrel_main_network gateway. Tailscale clients arrive with
@@ -47,17 +40,7 @@
 	# sudo docker logs things-caddy_server_1
 	log
 
-	# Pocket ID (passkey sign-in) and Tinyauth (login for the private apps)
-	@id host id.example.com
-	handle @id {
-		reverse_proxy things-pocket-id_server_1:1411
-	}
-	@login host login.example.com
-	handle @login {
-		reverse_proxy things-tinyauth_server_1:3000
-	}
-
-	# Public: apps log in with their own accounts / Pocket ID (OIDC).
+	# Public: apps log in with their own accounts.
 	# No forward_auth here: it breaks the mobile and TV apps.
 	@photos host photos.example.com
 	handle @photos {
@@ -80,26 +63,25 @@
 		reverse_proxy things-stump_server_1:10801
 	}
 
-	# Private: LAN/Tailscale only, plus Tinyauth (Pocket ID passkey sign-in).
+	# Private: LAN/Tailscale only; each app's own login (if any) on top.
+	# Transmission has no login, so anyone on the LAN or the tailnet can use
+	# download.
 	# Open them as https://<name>.example.com:30443 (umbrelOS owns 443 on the LAN).
 	# REQUIRED: keep these commented out until the client IP test in
 	# README.md passes.
 	# @movies host movies.example.com
 	# handle @movies {
 	# 	import private
-	# 	import tinyauth
 	# 	reverse_proxy radarr_server_1:7878
 	# }
 	# @shows host shows.example.com
 	# handle @shows {
 	# 	import private
-	# 	import tinyauth
 	# 	reverse_proxy sonarr_server_1:8989
 	# }
 	# @indexer host indexer.example.com
 	# handle @indexer {
 	# 	import private
-	# 	import tinyauth
 	# 	reverse_proxy prowlarr_server_1:9696
 	# }
 	# Transmission Next UI from things-transmission-vpn; for Transmission's
@@ -107,14 +89,12 @@
 	# @download host download.example.com
 	# handle @download {
 	# 	import private
-	# 	import tinyauth
 	# 	reverse_proxy things-transmission-vpn_web_1:8080
 	# }
 	# SideImpactor: page and its Apple relay on one HTTPS origin (WebUSB).
 	# @sideload host sideload.example.com
 	# handle @sideload {
 	# 	import private
-	# 	import tinyauth
 	# 	@wisp path /wisp/*
 	# 	handle @wisp {
 	# 		reverse_proxy things-sideimpactor_wisp_1:8080

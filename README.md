@@ -22,12 +22,10 @@ The apps show up under **Haus Things App Store**.
 | App | Version | Port | What | Setup |
 |-----|---------|------|------|-------|
 | [things-cloudflare-ddns](things-cloudflare-ddns/README.md) | 1.17.1 | — (30101 placeholder) | Keeps Cloudflare DNS records on this server's public IP. No web UI. | `.env` |
-| [things-caddy](things-caddy/README.md) | 2.11.7-1 | 30080, 30443 (30104 placeholder) | Reverse proxy: wildcard certificate (Cloudflare DNS), forward auth for private apps. No web UI. | `.env` + Caddyfile |
-| [things-pocket-id](things-pocket-id/README.md) | 2.18.0 | — (30105 placeholder) | Passkey-only sign-in (OIDC provider) at `id.<domain>`. | `.env` + key file, then web setup |
-| [things-tinyauth](things-tinyauth/README.md) | 5.2.0 | — (30106 placeholder) | Pocket ID login in front of the private apps (Caddy forward auth) at `login.<domain>:30443`. | `.env` |
+| [things-caddy](things-caddy/README.md) | 2.11.7-1 | 30080, 30443 (30104 placeholder) | Reverse proxy: wildcard certificate (Cloudflare DNS), LAN/Tailscale-only private apps. No web UI. | `.env` + Caddyfile |
 | [things-gitea-act-runner](things-gitea-act-runner/README.md) | 5.1.0 | — (30102 placeholder) | Gitea Actions runner with its own Docker-in-Docker. No web UI. **Not used: needs a Gitea server, which this setup no longer has. Do not install.** Kept just in case. | `.env` |
 | [things-transmission-vpn](things-transmission-vpn/README.md) | 1.104.1 | 30107 | Add-on for the official Transmission app: Mullvad exit node + kill switch via a Tailscale sidecar, and Transmission Next UI as its web UI. Uses the Docker socket (watchdog). | `.env` |
-| [things-stump](things-stump/README.md) | nightly | 10801 | Comics, manga and ebook server (OPDS, Kobo/KOReader sync), nightly builds. | none (optional `.env` for OIDC) |
+| [things-stump](things-stump/README.md) | nightly | 10801 | Comics, manga and ebook server (OPDS, Kobo/KOReader sync), nightly builds. | none |
 | [things-sideimpactor](things-sideimpactor/README.md) | 2026.0729.0513 | — (30108 placeholder) | Sign and install IPA files on an iPhone from the browser (WebUSB), with an Apple-only Wisp relay. HTTPS via Caddy only. | none |
 | [things-band-backup](things-band-backup/README.md) | 2.5.0 | — (30103 placeholder) | BAND → Immich backup and schedule-photo → calendar bot. No web UI. | `.env` |
 | [things-immich-ml](things-immich-ml/README.md) | 3.3.4 | — (30109 placeholder) | Immich machine learning on the Intel GPU (OpenVINO), for the official Immich app. No web UI. | Immich ML URL setting |
@@ -43,7 +41,7 @@ App data lives in `~/umbrel/app-data/<app-id>/data/` on the Umbrel server
 (Settings → Advanced settings → Terminal → umbrelOS, or SSH). Docker commands
 there need `sudo`.
 
-### `.env` apps (cloudflare-ddns, caddy, pocket-id, tinyauth, gitea-act-runner, transmission-vpn, stump, band-backup)
+### `.env` apps (cloudflare-ddns, caddy, gitea-act-runner, transmission-vpn, stump, band-backup)
 
 `docker-compose.yml` loads `${APP_DATA_DIR}/data/.env` with
 `env_file: required: false`, so the app installs without it and picks it up on
@@ -75,11 +73,9 @@ Files committed under an app's `data/` are copied on **fresh installs only**.
 1. Add this store.
 2. **things-cloudflare-ddns** → `.env` → check the log. DNS for the domain now points home.
 3. **things-caddy** → `.env` + Caddyfile → router 80→30080, 443→30443 → certificate in the log → **client IP test** (required before any private host).
-4. **things-pocket-id** → key file + `.env` → `https://id.<domain>/setup` (admin + passkey, `admins` group).
-5. **things-tinyauth** → Pocket ID client → `.env` → open a private host to test.
-6. Official **Transmission** → **things-transmission-vpn** (`.env` before installing) → its README tests (ipleak, kill switch, reattach, reboot).
-7. Official **Immich** → **things-band-backup** → `.env` (Immich API key, BAND login).
-8. Uncomment the private hosts in the Caddyfile / connect OIDC apps to Pocket ID one by one.
+4. Official **Transmission** → **things-transmission-vpn** (`.env` before installing) → its README tests (ipleak, kill switch, reattach, reboot).
+5. Official **Immich** → **things-band-backup** → `.env` (Immich API key, BAND login).
+6. Uncomment the private hosts in the Caddyfile one by one.
 
 things-gitea-act-runner is not part of the install.
 
@@ -118,8 +114,6 @@ needed, just **Merge**). A change needs review when:
 | ghcr.io/kic2807/sideimpactor | built here from upstream main (`.github/workflows/build-sideimpactor.yml`) | — | all |
 | ghcr.io/kic2807/wisp-relay | built here (`.github/workflows/build-wisp-relay.yml`) | — | all |
 | ghcr.io/kic2807/transmission-next-ui | hisproc/transmission-next-ui releases (built here, `.github/workflows/build-transmission-next-ui.yml`) | major, minor | patch, rebuild |
-| pocketid/pocket-id | GitHub releases | major | minor, patch |
-| ghcr.io/tinyauthapp/tinyauth | GitHub releases | major | patch |
 | ghcr.io/immich-app/immich-machine-learning (`-openvino`) | immich-app/immich releases | every update (match Umbrel's Immich) | — |
 | ghcr.io/cleanuparr/cleanuparr | GitHub releases | major, minor (minor releases can be breaking) | patch |
 | ghcr.io/kic2807/caddy-cloudflare | caddyserver/caddy releases | major | patch, plugin-only rebuild |

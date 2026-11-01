@@ -9,7 +9,7 @@ description: >-
   Side Impactor signs IPA files with your Apple ID and installs them on an iPhone connected to your computer over WebUSB, all inside the browser (Chrome or Edge on desktop).
 
 
-  It needs HTTPS: open it through things-caddy at https://sideload.<your domain>:30443 (LAN/Tailscale, Tinyauth login). The Umbrel home-screen icon does not work. A small relay included in this app lets the page reach Apple's servers; it only connects to the Apple hosts Side Impactor needs.
+  It needs HTTPS: open it through things-caddy at https://sideload.<your domain>:30443 (LAN/Tailscale only). The Umbrel home-screen icon does not work. A small relay included in this app lets the page reach Apple's servers; it only connects to the Apple hosts Side Impactor needs.
 releaseNotes: >-
   Frontend now built from upstream main (2026-07-29, 168eb2b) instead of the stale 2026-04 image: newer Apple login handling (503 retry, SMS fallback, re-auth fixes).
 

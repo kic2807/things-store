@@ -27,7 +27,7 @@ itunes.apple.com`, `gsa.apple.com` and `developerservices2.apple.com`, port
 `example.com` and `127.0.0.1` are refused).
 
 Caddy serves both on one origin: `sideload.<domain>/wisp/*` → `wisp`,
-everything else → `web`. The host is private (LAN/Tailscale + Tinyauth).
+everything else → `web`. The host is private (LAN/Tailscale only).
 
 Upstream's own image (`ghcr.io/lbr77/sideimpactor`) stopped being published
 in April 2026 and misses later login fixes, so `.github/workflows/build-sideimpactor.yml`
@@ -49,8 +49,7 @@ upstream/Apple issue, not this setup.
 3. Cloudflare: DNS-only A record `sideload` → the Umbrel's Tailscale address
    (like `movies`), and a UniFi local DNS record → the Umbrel LAN address if
    you use those at home.
-4. Open `https://sideload.<domain>:30443` in Chrome/Edge, sign in through
-   Tinyauth/Pocket ID.
+4. Open `https://sideload.<domain>:30443` in Chrome/Edge.
 
 ## Using it
 
