@@ -74,6 +74,12 @@
       "notes": { "github": "caddyserver/caddy" },
       "always_review": ["major"],
       "automerge": ["patch", "build"]
+    },
+    "cloudflare/cloudflared": {
+      "_comment": "Sidecar of things-subsy-cost. Calendar versions YYYY.M.P: a new year is a 'major' bump and is reviewed.",
+      "tag": "^(?P<v>\\d{4}\\.\\d+\\.\\d+)$",
+      "notes": { "github": "cloudflare/cloudflared" },
+      "automerge": ["minor", "patch"]
     }
   },
   "apps": {
@@ -84,6 +90,7 @@
     "things-stump": { "primary": "aaronleopold/stump" },
     "things-sideimpactor": { "primary": "ghcr.io/kic2807/sideimpactor" },
     "things-immich-ml": { "primary": "ghcr.io/immich-app/immich-machine-learning" },
-    "things-cleanuparr": { "primary": "ghcr.io/cleanuparr/cleanuparr" }
+    "things-cleanuparr": { "primary": "ghcr.io/cleanuparr/cleanuparr" },
+    "things-subsy-cost": { "primary": "ghcr.io/kic2807/subsy-cost-server" }
   }
 }

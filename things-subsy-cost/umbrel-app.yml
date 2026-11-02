@@ -1,0 +1,32 @@
+manifestVersion: 1
+id: things-subsy-cost
+category: developer
+name: Subsy Cost
+version: "1.0.0"
+tagline: Cost API for the Subsy Cost iOS app, published through Cloudflare Tunnel
+icon: https://raw.githubusercontent.com/kic2807/things-store/main/things-subsy-cost/icon.svg
+description: >-
+  Background service with no web UI. Opening the app from the home screen does nothing; the iOS app talks to it through Cloudflare Tunnel.
+
+
+  Pulls Subsy usage-cost rows from Superset at 09, 12, 15, 18 and 21 KST into SQLite, precomputes the dashboard figures and serves them to the iOS app. Access is guarded by a Cloudflare Access service token and an app bearer token.
+
+
+  Before starting, create the .env file described in the app README in the app data folder, then restart the app.
+releaseNotes: "First release."
+
+developer: kic2807
+website: https://github.com/kic2807/subsy-cost
+dependencies: []
+repo: https://github.com/kic2807/subsy-cost
+support: https://github.com/kic2807/subsy-cost/issues
+
+port: 30111
+gallery: []
+path: ""
+
+defaultUsername: ""
+defaultPassword: ""
+
+submitter: kic2807
+submission: https://github.com/kic2807/things-store
