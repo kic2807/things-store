@@ -6,7 +6,7 @@ version: "3.7"
 
 services:
   server:
-    image: ghcr.io/kic2807/subsy-cost-server:1.0.1@sha256:84c7bd8bd774fbbd957e1ff86adaead59beb6466da74b3e51d028c415719afc1
+    image: ghcr.io/kic2807/subsy-cost-server:1.0.2@sha256:a44e1b16d848b86206759b84d70ea65fc8b8cfc2a808448494753f9035349a3b
     restart: unless-stopped
     user: "1000:1000"
     environment:
