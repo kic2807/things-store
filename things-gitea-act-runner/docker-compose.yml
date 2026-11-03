@@ -25,7 +25,7 @@ services:
       - ${APP_DATA_DIR}/data/dind:/var/lib/docker
 
   runner:
-    image: gitea/runner:5.2.4@sha256:e8b3c7a5ed435fec38d1faf730cb784606cdd1c02e8543b6b96525b53281e60a
+    image: gitea/runner:5.3.0@sha256:cdc5336a0b0be435b6a21379edf5cccffcc6733cacd5672fcf5769716f56a768
     network_mode: service:dind
     restart: on-failure
     depends_on:
