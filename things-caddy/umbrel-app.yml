@@ -2,7 +2,7 @@ manifestVersion: 1
 id: things-caddy
 category: networking
 name: Caddy
-version: "2.11.7-2"
+version: "2.11.8"
 tagline: Reverse proxy with a wildcard certificate and forward auth
 icon: https://raw.githubusercontent.com/kic2807/things-store/main/things-caddy/icon.svg
 description: >-
@@ -14,7 +14,7 @@ description: >-
 
   Before starting, create the .env file and the Caddyfile described in the store README in the app data folder, then restart the app.
 releaseNotes: >-
-  New square app icon (matches the other Umbrel apps). No other changes.
+  Updated images: ghcr.io/kic2807/caddy-cloudflare 2.11.7-cf0.2.4 -> 2.11.8-cf0.2.4.
 
 developer: Caddy
 website: https://caddyserver.com

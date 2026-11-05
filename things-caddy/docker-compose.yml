@@ -7,7 +7,7 @@ version: "3.7"
 
 services:
   server:
-    image: ghcr.io/kic2807/caddy-cloudflare:2.11.7-cf0.2.4@sha256:a13874bd33fdedf41b20feb5b25f61347d2807e2f3644ca624ae7491d270718d
+    image: ghcr.io/kic2807/caddy-cloudflare:2.11.8-cf0.2.4@sha256:a844b61d0730b76bf3906fe693930227cffade8050984191c7b1713c6da1229f
     restart: on-failure
     user: "1000:1000"
     read_only: true
