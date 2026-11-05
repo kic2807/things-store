@@ -30,7 +30,7 @@ services:
   # event and also checks every 3 s. Needs the Docker socket, i.e.
   # root-level access to the host; see README.
   watchdog:
-    image: docker:29.9.2-cli@sha256:2a146f3eb1ee1015c482756624bbff3a94a1b0531cad6fca03be55943373cf95
+    image: docker:29.9.3-cli@sha256:4d742ab934c2149b628bf26369ac3ec51cb91e2e28fe6722a0e86a6d6efc4bd5
     restart: on-failure
     network_mode: none
     environment:
