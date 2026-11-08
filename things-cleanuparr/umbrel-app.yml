@@ -2,7 +2,7 @@ manifestVersion: 1
 id: things-cleanuparr
 category: media
 name: Cleanuparr
-version: "2.10.12"
+version: "2.11.0"
 tagline: Remove stalled downloads and search for replacements
 icon: https://raw.githubusercontent.com/kic2807/things-store/main/things-cleanuparr/icon.svg
 description: >-
@@ -10,7 +10,8 @@ description: >-
 
 
   On first open, create the Cleanuparr account. Then add Sonarr (http://sonarr_server_1:8989), Radarr (http://radarr_server_1:7878) and Transmission (http://transmission_server_1:9091, URL base "transmission") and turn on the Queue Cleaner. See the README in the store repository.
-releaseNotes: ""
+releaseNotes: >-
+  Updated images: ghcr.io/cleanuparr/cleanuparr 2.10.12 -> 2.11.0.
 
 developer: Cleanuparr
 website: https://cleanuparr.github.io/Cleanuparr/
