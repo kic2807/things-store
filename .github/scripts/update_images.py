@@ -100,6 +100,12 @@ def index_digest(name, tag):
         for m in body.get("manifests", [])
         if m.get("platform", {}).get("os") not in (None, "unknown")
     }
+    if "manifests" not in body and "config" in body:
+        # Single-platform image (no index, e.g. josh5/steam-headless): the
+        # platform is in the image config blob.
+        with _request(registry, repo, f'blobs/{body["config"]["digest"]}') as resp:
+            config = json.load(resp)
+        platforms = {f'{config.get("os")}/{config.get("architecture")}'}
     return digest, platforms
 
 
@@ -217,7 +223,10 @@ def plan_app(app, app_cfg):
     compose_path = ROOT / app / "docker-compose.yml"
     compose = compose_path.read_text()
     changes = []
-    for _, name, tag, digest in IMAGE_RE.findall(compose):
+    # An image pinned in several services (e.g. a setup helper using the app's
+    # own image) is planned once; the replace below updates every occurrence.
+    pinned = dict.fromkeys((name, tag, digest) for _, name, tag, digest in IMAGE_RE.findall(compose))
+    for name, tag, digest in pinned:
         # An image can have several rules for different tag flavours, keyed
         # "name" and "name@variant" (e.g. docker -dind and docker@cli -cli);
         # the first whose tag pattern matches the pinned tag applies.

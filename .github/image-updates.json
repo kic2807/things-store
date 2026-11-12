@@ -75,6 +75,11 @@
       "always_review": ["major"],
       "automerge": ["patch", "build"]
     },
+    "josh5/steam-headless": {
+      "_comment": "Steam Headless V2. Tags <major>.<minor>.<YYYYMMDD>.<n>, no GitHub releases for V2. Single-arch amd64 manifests. Every update is reviewed: desktop, Steam and driver changes can break streaming.",
+      "tag": "^(?P<v>\\d+\\.\\d+)\\.(?P<d>\\d{8})\\.(?P<n>\\d+)$",
+      "always_review": ["major", "minor", "patch", "build"]
+    },
     "cloudflare/cloudflared": {
       "_comment": "Sidecar of things-subsy-cost. Calendar versions YYYY.M.P: a new year is a 'major' bump and is reviewed.",
       "tag": "^(?P<v>\\d{4}\\.\\d+\\.\\d+)$",
@@ -91,6 +96,7 @@
     "things-sideimpactor": { "primary": "ghcr.io/kic2807/sideimpactor" },
     "things-immich-ml": { "primary": "ghcr.io/immich-app/immich-machine-learning" },
     "things-cleanuparr": { "primary": "ghcr.io/cleanuparr/cleanuparr" },
-    "things-subsy-cost": { "primary": "ghcr.io/kic2807/subsy-cost-server" }
+    "things-subsy-cost": { "primary": "ghcr.io/kic2807/subsy-cost-server" },
+    "things-steam-headless": { "primary": "josh5/steam-headless" }
   }
 }

@@ -1,0 +1,103 @@
+version: "3.7"
+
+# Steam Headless V2: a KDE Plasma (Wayland) desktop with Steam and Sunshine in
+# one systemd container, streamed to a browser (SHUI, https://<umbrel>:8483)
+# or to Moonlight / Steam Remote Play. Based on upstream's single-container
+# host-networking compose (steamheadless.com → Deploy with Docker Compose).
+#
+# Host networking: SHUI binds TCP+UDP 8483, Sunshine 47984-48010, Steam
+# Remote Play its usual ports. No app_proxy (like Umbrel's Home Assistant
+# app); SHUI has its own login. LAN/Tailscale only: do not port-forward.
+
+services:
+  # One-shot helper, runs before the desktop on every start:
+  # - creates Downloads/steam (game library) owned by the umbrel user (1000);
+  #   Docker would otherwise create the missing folder as root
+  # - raises two host kernel limits the desktop needs (umbrelOS defaults are
+  #   too low and /etc/sysctl.d is not ours to change):
+  #   fs.inotify.max_user_instances >= 1024 (KDE, Steam; EMFILE otherwise)
+  #   vm.max_map_count >= 1048576 (Proton games)
+  #   Values are only raised, never lowered. They reset on reboot and are set
+  #   again when the app starts.
+  # Same image as the desktop (already pulled), so no extra image to track.
+  setup:
+    image: josh5/steam-headless:2.44.20261019.1@sha256:c60f4d7243a4d94515f722441fff90b752413bf6a45bb221c9a4ed55bc4d9108
+    restart: "no"
+    privileged: true
+    user: "0:0"
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+        chown 1000:1000 /games
+        raise() { cur=$$(cat "$$1"); if [ "$$cur" -lt "$$2" ]; then echo "$$2" > "$$1"; echo "$$1: $$cur -> $$2"; else echo "$$1: $$cur (ok)"; fi; }
+        raise /proc/sys/fs/inotify/max_user_instances 1024
+        raise /proc/sys/vm/max_map_count 1048576
+    volumes:
+      - ${UMBREL_ROOT}/data/storage/downloads/steam:/games
+
+  desktop:
+    image: josh5/steam-headless:2.44.20261019.1@sha256:c60f4d7243a4d94515f722441fff90b752413bf6a45bb221c9a4ed55bc4d9108
+    restart: on-failure
+    network_mode: host
+    depends_on:
+      setup:
+        condition: service_completed_successfully
+
+    # Upstream's required capabilities and security options (systemd in an
+    # unprivileged container, Flatpak/Proton sandboxes, virtual input).
+    # writable-cgroups needs Docker 28+ (umbrelOS 2.0: 28.5, 2.1: 29).
+    cap_add:
+      - DAC_READ_SEARCH
+      - NET_ADMIN
+      - SYS_ADMIN
+      - SYS_NICE
+      - SYS_PTRACE
+    security_opt:
+      - apparmor:unconfined
+      - seccomp=unconfined
+      - systempaths=unconfined
+      - writable-cgroups=true
+    cgroup: private
+
+    # Graceful systemd shutdown
+    stop_signal: SIGRTMIN+3
+    stop_grace_period: 30s
+    pids_limit: 8192
+    shm_size: 2gb
+    tty: true
+
+    environment:
+      PUID: "1000"
+      PGID: "1000"
+      TZ: Asia/Seoul
+
+    # Only the render node, as upstream does (no card*: the desktop is
+    # headless). On a machine with a second GPU, check /dev/dri/by-path.
+    devices:
+      - /dev/dri/renderD128:/dev/dri/renderD128
+      - /dev/fuse:/dev/fuse
+      - /dev/uinput:/dev/uinput
+      - /dev/uhid:/dev/uhid
+    # Dynamic input event minors for Sunshine and virtual controllers
+    device_cgroup_rules:
+      - "c 13:* rwm"
+
+    tmpfs:
+      - /run
+      - /run/lock
+      - /tmp
+      - /dev/input:rw,dev,mode=0755
+
+    volumes:
+      - /etc/localtime:/run/host-localtime:ro
+      - /sys/devices/virtual/input:/sys/devices/virtual/input:ro
+      # Appliance state: SHUI credentials, TLS certificate (root-owned)
+      - ${APP_DATA_DIR}/data/state:/var/lib/steam-headless
+      # systemd journal (7 days)
+      - ${APP_DATA_DIR}/data/journal:/var/log/journal
+      # Desktop profile, Steam client, Proton prefixes, saves (UID 1000)
+      - ${APP_DATA_DIR}/data/home:/home/steamheadless
+      # Game library: Downloads/steam. Add /mnt/games as a Steam library
+      # folder (Steam → Settings → Storage) after the first login.
+      - ${UMBREL_ROOT}/data/storage/downloads/steam:/mnt/games

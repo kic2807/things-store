@@ -31,6 +31,7 @@ The apps show up under **Haus Things App Store**.
 | [things-immich-ml](things-immich-ml/README.md) | 3.3.4 | — (30109 placeholder) | Immich machine learning on the Intel GPU (OpenVINO), for the official Immich app. No web UI. | Immich ML URL setting |
 | [things-cleanuparr](things-cleanuparr/README.md) | 2.10.12 | 30110 | Removes stalled and failed downloads from the Sonarr/Radarr queues, blocklists them and searches again (Transmission). | web setup |
 | [things-subsy-cost](things-subsy-cost/README.md) | 1.0.0 | — (30111 placeholder) | Subsy Cost API for the iOS app: Superset → SQLite on a schedule, served through Cloudflare Tunnel + Access. No web UI. | `.env` |
+| [things-steam-headless](things-steam-headless/README.md) | 2.44 | 8483 (HTTPS) | Steam desktop (KDE, Proton, Sunshine) streamed to a browser, Moonlight or Steam Remote Play. Host network, needs a GPU with video encoding and 16 GB+ RAM. Most privileged app here. | web setup |
 
 "No web UI" apps have no `app_proxy`; the manifest port is only a placeholder
 and opening them from the home screen shows nothing. Check them with
@@ -119,6 +120,7 @@ needed, just **Merge**). A change needs review when:
 | ghcr.io/cleanuparr/cleanuparr | GitHub releases | major, minor (minor releases can be breaking) | patch |
 | ghcr.io/kic2807/caddy-cloudflare | caddyserver/caddy releases | major | patch, plugin-only rebuild |
 | cloudflare/cloudflared (things-subsy-cost) | cloudflare/cloudflared releases | major (new year) | minor, patch |
+| josh5/steam-headless | none (no V2 releases on GitHub) | every update | — |
 
 ### caddy-cloudflare image
 
