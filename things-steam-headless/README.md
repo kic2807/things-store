@@ -52,11 +52,12 @@ Play from:
    warning. The Umbrel home screen icon opens `http://…:8483`, which does not
    work.
 4. Sign in with the temporary password and set the permanent admin password.
-5. In the streamed desktop, log in to Steam. Then Steam → Settings →
-   Storage → add **`/mnt/games`** as a library folder and make it the
-   default, so games go to `Downloads/steam` instead of the app's data.
+5. In the streamed desktop, log in to Steam. The container already sets up
+   a Steam library in `/mnt/games/GameLibrary/Steam` (=
+   `Downloads/steam/GameLibrary/Steam`); pick it when installing a game.
 6. **Moonlight:** in SHUI open **Sunshine**, then add the Umbrel in Moonlight
-   (by IP if it is not found) and enter the PIN Moonlight shows in SHUI's
+   **by IP** (umbrelOS's own mDNS responder holds UDP 5353, so the container
+   disables its Avahi and Moonlight does not discover it) and enter the PIN Moonlight shows in SHUI's
    Sunshine page.
 
 ## Storage
@@ -140,7 +141,7 @@ First install 2026-11-12 on the N100 box (umbrelOS 2.0): setup OK; the
 desktop looped on a PAM limits error, fixed in 2.44-2. Still to test:
 
 - [x] `setup` exits 0, `Downloads/steam` owned by 1000, both limits raised
-- [ ] `systemctl is-system-running`: running/degraded
+- [x] desktop boots to `steam-headless.target` (umbrelOS 2.0, N100, 2.44-2)
 - [ ] SHUI sign-in with the temporary password, permanent password set
 - [ ] Browser stream with hardware encoding (no encoder probe warning)
 - [ ] Steam login, `/mnt/games` library, a game installs into `Downloads/steam`
