@@ -2,16 +2,16 @@ manifestVersion: 1
 id: things-steam-headless
 category: gaming
 name: Steam Headless
-version: "2.44-2"
+version: "2.44-3"
 tagline: Steam desktop for browser, Moonlight and Remote Play streaming
 icon: https://raw.githubusercontent.com/kic2807/things-store/main/things-steam-headless/icon.svg
 description: >-
   Steam Headless runs a full KDE Plasma desktop with Steam, Proton and Sunshine in a container, with no monitor attached. Play from a browser (WebRTC), from Moonlight on phones, TVs and handhelds, or with Steam Remote Play / Steam Link.
 
 
-  Needs an Intel or AMD GPU with hardware video encoding (/dev/dri/renderD128) and at least 16 GB of RAM. Open https://<your-umbrel>:8483 (HTTPS, self-signed certificate): the home screen icon opens http://, which does not work. The first sign-in uses a temporary password from the app logs. Games are stored in Downloads/steam. LAN and Tailscale only. See the README in the store repository.
+  Needs an Intel or AMD GPU with hardware video encoding (/dev/dri/renderD128) and at least 16 GB of RAM. Open https://<your-umbrel-ip>:8483 directly (HTTPS, self-signed certificate). The home screen icon does not work: its port (30112) is only a placeholder. The first sign-in uses a temporary password from the app logs. Games are stored in Downloads/steam. LAN and Tailscale only. See the README in the store repository.
 releaseNotes: >-
-  Fixes the desktop restarting in a loop ("runuser: cannot open session: Permission denied") on umbrelOS, where the GPU render group is the image's pipewire group: the desktop now gets the SYS_RESOURCE capability so pipewire's real-time limits can be applied.
+  The web UI on https://<your-umbrel-ip>:8483 showed "Client sent an HTTP request to an HTTPS server": umbrelOS puts its own HTTPS proxy on an app's home screen port and forwards plain HTTP, which Steam Headless does not accept. The home screen port is now a placeholder (30112), so port 8483 reaches Steam Headless directly. Open https://<your-umbrel-ip>:8483 instead of the home screen icon.
 
 developer: Steam Headless
 website: https://steamheadless.com
@@ -19,7 +19,7 @@ dependencies: []
 repo: https://github.com/Steam-Headless/docker-steam-headless
 support: https://github.com/Steam-Headless/docker-steam-headless/issues
 
-port: 8483
+port: 30112
 gallery: []
 path: ""
 

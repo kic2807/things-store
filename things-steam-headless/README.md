@@ -49,8 +49,12 @@ Play from:
 
 3. Open **`https://<umbrel-ip>:8483`**, e.g. `https://192.168.1.100:8483`.
    It is HTTPS only with a self-signed certificate: accept the browser
-   warning. The Umbrel home screen icon opens `http://…:8483`, which does not
-   work.
+   warning. **Do not use the home screen icon**: the manifest port (30112) is
+   only a placeholder. umbrelOS puts its own HTTPS proxy ("Umbrel Local HTTPS
+   CA") on an app's manifest port and forwards plain HTTP to the app, which
+   SHUI rejects with *Client sent an HTTP request to an HTTPS server*. With
+   8483 as the manifest port (2.44-2 and earlier) that proxy sat in front of
+   SHUI.
 4. Sign in with the temporary password and set the permanent admin password.
 5. In the streamed desktop, log in to Steam. The container already sets up
    a Steam library in `/mnt/games/GameLibrary/Steam` (=
@@ -142,6 +146,7 @@ desktop looped on a PAM limits error, fixed in 2.44-2. Still to test:
 
 - [x] `setup` exits 0, `Downloads/steam` owned by 1000, both limits raised
 - [x] desktop boots to `steam-headless.target` (umbrelOS 2.0, N100, 2.44-2)
+- [x] `steam-headless-healthcheck`: healthy (31 checks) on the N100 box
 - [ ] SHUI sign-in with the temporary password, permanent password set
 - [ ] Browser stream with hardware encoding (no encoder probe warning)
 - [ ] Steam login, `/mnt/games` library, a game installs into `Downloads/steam`
