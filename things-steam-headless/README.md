@@ -117,6 +117,11 @@ troubleshooting guide: <https://steamheadless.com/docs/>.
 
 - *Web page loads but the stream stays on "Connecting…"*: UDP 8483 is
   blocked between the client and the Umbrel.
+- *Restart loop with `runuser: cannot open session: Permission denied`*: the
+  image's PAM limits for the `pipewire` group exceed the container's hard
+  limits. On umbrelOS the host `render` group (GID 991) is `pipewire` inside
+  the image, so the desktop user joins it for GPU access. The compose file
+  raises `rtprio`, `nice` and `memlock` for this (fixed in 2.44-1).
 - *"No supported hardware encoder passed probe"*: the GPU or its video driver
   is not usable in the container (check `/dev/dri` and the kernel version).
 
@@ -129,9 +134,10 @@ update when you have time to test.
 
 ## Test checklist
 
-Not tested yet (written 2026-11-12 for an upcoming Arc B390 machine):
+First install 2026-11-12 on the N100 box (umbrelOS 2.0): setup OK; the
+desktop looped on a PAM limits error, fixed in 2.44-1. Still to test:
 
-- [ ] `setup` exits 0, `Downloads/steam` owned by 1000, both limits raised
+- [x] `setup` exits 0, `Downloads/steam` owned by 1000, both limits raised
 - [ ] `systemctl is-system-running`: running/degraded
 - [ ] SHUI sign-in with the temporary password, permanent password set
 - [ ] Browser stream with hardware encoding (no encoder probe warning)

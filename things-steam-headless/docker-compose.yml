@@ -66,6 +66,17 @@ services:
     pids_limit: 8192
     shm_size: 2gb
     tty: true
+    # Hard limits high enough for the image's PAM limits (limits.d):
+    # @pipewire rtprio 70, nice -19 (RLIMIT_NICE 39), memlock 4 GiB;
+    # @gamemode nice -10. pam_limits can only lower a hard limit without
+    # CAP_SYS_RESOURCE, so with Docker's defaults every runuser/login for a
+    # pipewire member fails ("runuser: cannot open session: Permission
+    # denied"). steamheadless joins pipewire when the host's render GID
+    # equals the image's pipewire GID (991 on umbrelOS).
+    ulimits:
+      rtprio: 70
+      nice: 40
+      memlock: -1
 
     environment:
       PUID: "1000"
