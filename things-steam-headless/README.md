@@ -81,7 +81,8 @@ Steam Cloud, Proton prefixes) but not the games in `Downloads/steam`.
 - Browser streaming over Tailscale works because WebRTC uses the same UDP
   8483 port. Moonlight over Tailscale: add the Umbrel's Tailscale IP by hand.
 - **Privileges:** this is the most privileged app in the store. The desktop
-  gets `SYS_ADMIN`, `NET_ADMIN`, `SYS_PTRACE`, no seccomp/AppArmor, writable
+  gets `SYS_ADMIN`, `NET_ADMIN`, `SYS_PTRACE`, `SYS_RESOURCE` (see
+  Troubleshooting), no seccomp/AppArmor, writable
   cgroups and the host network (upstream's requirements for systemd,
   sandboxes and virtual input). The `setup` helper runs `privileged` for a
   few seconds to change two kernel settings. A compromised game or desktop
@@ -117,11 +118,12 @@ troubleshooting guide: <https://steamheadless.com/docs/>.
 
 - *Web page loads but the stream stays on "Connecting…"*: UDP 8483 is
   blocked between the client and the Umbrel.
-- *Restart loop with `runuser: cannot open session: Permission denied`*: the
-  image's PAM limits for the `pipewire` group exceed the container's hard
-  limits. On umbrelOS the host `render` group (GID 991) is `pipewire` inside
-  the image, so the desktop user joins it for GPU access. The compose file
-  raises `rtprio`, `nice` and `memlock` for this (fixed in 2.44-1).
+- *Restart loop with `runuser: cannot open session: Permission denied`*: on
+  umbrelOS the host `render` group (GID 991) is `pipewire` inside the image,
+  so the desktop user joins `pipewire` for GPU access, and the image's
+  `25-pw-rlimits.conf` (rtprio 70, nice -19) can then only be applied with
+  `SYS_RESOURCE`. Raised ulimits alone did not help (2.44-1); 2.44-2 adds
+  `SYS_RESOURCE`, which made every case pass in a test container.
 - *"No supported hardware encoder passed probe"*: the GPU or its video driver
   is not usable in the container (check `/dev/dri` and the kernel version).
 
@@ -135,7 +137,7 @@ update when you have time to test.
 ## Test checklist
 
 First install 2026-11-12 on the N100 box (umbrelOS 2.0): setup OK; the
-desktop looped on a PAM limits error, fixed in 2.44-1. Still to test:
+desktop looped on a PAM limits error, fixed in 2.44-2. Still to test:
 
 - [x] `setup` exits 0, `Downloads/steam` owned by 1000, both limits raised
 - [ ] `systemctl is-system-running`: running/degraded

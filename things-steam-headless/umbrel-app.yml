@@ -2,7 +2,7 @@ manifestVersion: 1
 id: things-steam-headless
 category: gaming
 name: Steam Headless
-version: "2.44-1"
+version: "2.44-2"
 tagline: Steam desktop for browser, Moonlight and Remote Play streaming
 icon: https://raw.githubusercontent.com/kic2807/things-store/main/things-steam-headless/icon.svg
 description: >-
@@ -11,7 +11,7 @@ description: >-
 
   Needs an Intel or AMD GPU with hardware video encoding (/dev/dri/renderD128) and at least 16 GB of RAM. Open https://<your-umbrel>:8483 (HTTPS, self-signed certificate): the home screen icon opens http://, which does not work. The first sign-in uses a temporary password from the app logs. Games are stored in Downloads/steam. LAN and Tailscale only. See the README in the store repository.
 releaseNotes: >-
-  Fixes the desktop failing to start in a loop ("runuser: cannot open session: Permission denied") on hosts where the GPU render group has the same number as the image's pipewire group, such as umbrelOS.
+  Fixes the desktop restarting in a loop ("runuser: cannot open session: Permission denied") on umbrelOS, where the GPU render group is the image's pipewire group: the desktop now gets the SYS_RESOURCE capability so pipewire's real-time limits can be applied.
 
 developer: Steam Headless
 website: https://steamheadless.com

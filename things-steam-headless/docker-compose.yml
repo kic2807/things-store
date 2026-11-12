@@ -53,6 +53,14 @@ services:
       - SYS_ADMIN
       - SYS_NICE
       - SYS_PTRACE
+      # Not in upstream's list. On umbrelOS the host render group (GID 991,
+      # owner of /dev/dri/renderD128) is the image's pipewire group, so the
+      # desktop user joins pipewire for GPU access. The image's
+      # /etc/security/limits.d/25-pw-rlimits.conf then gives it rtprio 70 and
+      # nice -19, which pam_limits cannot apply without SYS_RESOURCE (even
+      # under raised ulimits): every runuser fails with "cannot open
+      # session: Permission denied" and the container restarts in a loop.
+      - SYS_RESOURCE
     security_opt:
       - apparmor:unconfined
       - seccomp=unconfined
@@ -66,13 +74,9 @@ services:
     pids_limit: 8192
     shm_size: 2gb
     tty: true
-    # Hard limits high enough for the image's PAM limits (limits.d):
-    # @pipewire rtprio 70, nice -19 (RLIMIT_NICE 39), memlock 4 GiB;
-    # @gamemode nice -10. pam_limits can only lower a hard limit without
-    # CAP_SYS_RESOURCE, so with Docker's defaults every runuser/login for a
-    # pipewire member fails ("runuser: cannot open session: Permission
-    # denied"). steamheadless joins pipewire when the host's render GID
-    # equals the image's pipewire GID (991 on umbrelOS).
+    # pipewire limits (see SYS_RESOURCE above): hard limits that cover the
+    # image's limits.d values (rtprio 70, nice -19 = RLIMIT_NICE 39, memlock
+    # 4 GiB). Tested together with SYS_RESOURCE on umbrelOS 2.0.
     ulimits:
       rtprio: 70
       nice: 40
