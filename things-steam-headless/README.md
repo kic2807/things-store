@@ -131,6 +131,10 @@ guide: <https://steamheadless.com/docs/>.
   not usable in the container (check `/dev/dri` and the kernel version).
 - *Sunshine not running (port 47990 refused)*: it stays off until the first
   SHUI sign-in is completed.
+- *`steam-headless-steam.service: Failed with result 'exit-code'` on a fresh
+  install*: the first launch downloads and installs a ~480 MB Steam client
+  update (`~/.local/share/Steam/logs/bootstrap_log.txt`); systemd restarts
+  Steam and the next start runs. The healthcheck shows `restarts=1`.
 
 ## Updates
 
@@ -146,7 +150,7 @@ N100 box, umbrelOS 2.0:
 - [x] `setup` exits 0, `Downloads/steam` owned by 1000, limits raised
 - [x] desktop boots, healthcheck healthy (31 checks)
 - [x] SHUI sign-in, permanent password set (2.44-3)
-- [ ] `setup` with reduced capabilities (2.44-4): no `WARNING` lines
+- [x] `setup` with reduced capabilities (2.44-4): no `WARNING` lines
 - [ ] Browser stream with hardware encoding (no encoder probe warning)
 - [ ] Steam login, a game installs into `Downloads/steam/GameLibrary/Steam`
 - [ ] Moonlight pairing and a game stream with controller input
