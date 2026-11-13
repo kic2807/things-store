@@ -2,7 +2,7 @@ manifestVersion: 1
 id: things-subsy-cost
 category: developer
 name: Subsy Cost
-version: "1.0.2"
+version: "1.0.2-1"
 tagline: Cost API for the Subsy Cost iOS app, published through Cloudflare Tunnel
 icon: https://raw.githubusercontent.com/kic2807/things-store/main/things-subsy-cost/icon.svg
 description: >-
@@ -13,7 +13,8 @@ description: >-
 
 
   Before starting, create the .env file described in the app README in the app data folder, then restart the app.
-releaseNotes: "Workspace display names are read from Superset."
+releaseNotes: >-
+  Updated images: cloudflare/cloudflared 2026.10.7 -> 2026.11.0.
 
 developer: kic2807
 website: https://github.com/kic2807/subsy-cost
