@@ -1,0 +1,142 @@
+name: Build orca-server
+
+# Builds ghcr.io/kic2807/orca-server:<orca version>-r<REVISION> (linux/amd64)
+# for things-orca-server: the orca-server-linux-x64.tar.gz asset of the newest
+# stablyai/orca release (checked against the SHA-256 GitHub lists for it) on
+# Debian, see .github/orca-server. Built only when that tag does not exist
+# yet; bump REVISION for a rebuild of the same release. Runs daily before
+# "Update images", which then opens the things-orca-server PR.
+
+on:
+  schedule:
+    # Daily at 03:43 KST (18:43 UTC)
+    - cron: "43 18 * * *"
+  push:
+    branches: [main]
+    paths:
+      - .github/orca-server/**
+      - .github/workflows/build-orca-server.yml
+  workflow_dispatch:
+    inputs:
+      release:
+        description: "Orca release tag, e.g. v1.4.258 (empty = latest)"
+        required: false
+      force:
+        description: "Rebuild even if the tag exists"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: build-orca-server
+  cancel-in-progress: false
+
+env:
+  IMAGE: ghcr.io/kic2807/orca-server
+  UPSTREAM: stablyai/orca
+  ASSET: orca-server-linux-x64.tar.gz
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pick Orca release and tag
+        id: v
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          release="${{ inputs.release }}"
+          if [ -z "$release" ]; then
+            release=$(gh api "repos/$UPSTREAM/releases/latest" --jq .tag_name)
+          fi
+          digest=$(gh api "repos/$UPSTREAM/releases/tags/$release" \
+            --jq ".assets[] | select(.name == \"$ASSET\") | .digest")
+          case "$digest" in
+            sha256:????????????????????????????????????????????????????????????????) ;;
+            *) echo "no sha256 digest for $ASSET in $release: '$digest'"; exit 1 ;;
+          esac
+          rev=$(cat .github/orca-server/REVISION)
+          version="${release#v}"
+          tag="${version}-r${rev}"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "sha256=${digest#sha256:}" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "upstream $release ($digest) -> $tag"
+          token=$(curl -s "https://ghcr.io/token?scope=repository:kic2807/orca-server:pull" | python3 -c "import sys,json;print(json.load(sys.stdin).get('token',''))")
+          code=$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $token" \
+            -H "Accept: application/vnd.oci.image.index.v1+json" "https://ghcr.io/v2/kic2807/orca-server/manifests/$tag")
+          if [ "$code" = 200 ] && [ "${{ inputs.force }}" != "true" ]; then
+            echo "$IMAGE:$tag already exists"
+          else
+            echo "build=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: docker/setup-buildx-action@v3
+        if: steps.v.outputs.build == 'true'
+
+      - name: Build and test
+        if: steps.v.outputs.build == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: .github/orca-server
+          platforms: linux/amd64
+          build-args: |
+            ORCA_VERSION=${{ steps.v.outputs.version }}
+            ORCA_SHA256=${{ steps.v.outputs.sha256 }}
+          load: true
+          tags: orca-server:test
+
+      - name: Check the server starts with the app's restrictions
+        if: steps.v.outputs.build == 'true'
+        run: |
+          # Same options as things-orca-server's compose.
+          docker run -d --name orca --init --cap-drop all \
+            --security-opt no-new-privileges:true -p 16768:6768 orca-server:test
+          for i in $(seq 60); do
+            docker logs orca 2>&1 | grep -q 'Orca server ready' && break
+            sleep 2
+          done
+          docker logs orca 2>&1
+          docker logs orca 2>&1 | grep -q 'Orca server ready'
+          docker logs orca 2>&1 | grep -q 'Terminal daemon: live'
+          docker exec orca orca status | tee /tmp/status
+          grep -q 'runtimeState: ready' /tmp/status
+          docker exec orca orca --version | grep -x "${{ steps.v.outputs.version }}"
+          for t in git gh node npm python3 ssh rg make; do
+            docker exec orca sh -c "command -v $t"
+          done
+
+      - uses: docker/login-action@v3
+        if: steps.v.outputs.build == 'true'
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push
+        if: steps.v.outputs.build == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: .github/orca-server
+          platforms: linux/amd64
+          build-args: |
+            ORCA_VERSION=${{ steps.v.outputs.version }}
+            ORCA_SHA256=${{ steps.v.outputs.sha256 }}
+          # Provenance makes the tag a multi-platform index, as update_images.py expects.
+          provenance: mode=min
+          push: true
+          tags: ${{ env.IMAGE }}:${{ steps.v.outputs.tag }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.description=Orca headless server (${{ env.UPSTREAM }} v${{ steps.v.outputs.version }}) for things-orca-server
+            org.opencontainers.image.version=${{ steps.v.outputs.tag }}
+            org.opencontainers.image.licenses=MIT
+
+      - name: Digest
+        if: steps.v.outputs.build == 'true'
+        run: docker buildx imagetools inspect "${IMAGE}:${{ steps.v.outputs.tag }}"
