@@ -1,36 +1,56 @@
 version: "3.7"
 
-# Steam Headless V2: a KDE Plasma (Wayland) desktop with Steam and Sunshine in
-# one systemd container, streamed to a browser (SHUI, https://<umbrel>:8483)
-# or to Moonlight / Steam Remote Play. Based on upstream's single-container
-# host-networking compose (steamheadless.com → Deploy with Docker Compose).
+# Steam Headless V2: KDE Plasma (Wayland), Steam and Sunshine in one systemd
+# container. Based on upstream's single-container host-network compose
+# (steamheadless.com → Deploy with Docker Compose), with three umbrelOS
+# changes, each explained where it is set:
+#   - setup service: game folder ownership and two host kernel limits
+#   - SYS_RESOURCE + ulimits: pipewire PAM limits (render GID clash)
+#   - manifest port 30112 is a placeholder (umbrel-app.yml, README)
 #
-# Host networking: SHUI binds TCP+UDP 8483, Sunshine 47984-48010, Steam
-# Remote Play its usual ports. No app_proxy (like Umbrel's Home Assistant
-# app); SHUI has its own login. LAN/Tailscale only: do not port-forward.
+# Host network: SHUI on TCP+UDP 8483 (HTTPS, own login), Sunshine on
+# 47984-48010, Steam Remote Play on its usual ports. No app_proxy.
+# LAN/Tailscale only: do not port-forward.
 
 services:
-  # One-shot helper, runs before the desktop on every start:
-  # - creates Downloads/steam (game library) owned by the umbrel user (1000);
-  #   Docker would otherwise create the missing folder as root
-  # - raises two host kernel limits the desktop needs (umbrelOS defaults are
-  #   too low and /etc/sysctl.d is not ours to change):
-  #   fs.inotify.max_user_instances >= 1024 (KDE, Steam; EMFILE otherwise)
-  #   vm.max_map_count >= 1048576 (Proton games)
-  #   Values are only raised, never lowered. They reset on reboot and are set
-  #   again when the app starts.
-  # Same image as the desktop (already pulled), so no extra image to track.
+  # One-shot, before the desktop on every start (exits, then the desktop
+  # starts):
+  #   - Downloads/steam owned by the umbrel user (1000); Docker creates a
+  #     missing bind-mount folder as root
+  #   - host kernel limits, raised only, reset on reboot:
+  #     fs.inotify.max_user_instances >= 1024 (KDE/Steam, EMFILE otherwise)
+  #     vm.max_map_count >= 1048576 (Proton games)
+  # A limit that cannot be raised is logged as a warning and the desktop
+  # still starts. Same image as the desktop, so nothing extra to pull.
+  # Capabilities: CHOWN for the folder, SYS_RESOURCE for the inotify limit
+  # (a per-user-namespace sysctl); systempaths=unconfined makes /proc/sys
+  # writable. Nothing else, no privileged mode.
   setup:
     image: josh5/steam-headless:2.44.20261019.1@sha256:c60f4d7243a4d94515f722441fff90b752413bf6a45bb221c9a4ed55bc4d9108
     restart: "no"
-    privileged: true
     user: "0:0"
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SYS_RESOURCE
+    security_opt:
+      - systempaths=unconfined
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
         set -e
         chown 1000:1000 /games
-        raise() { cur=$$(cat "$$1"); if [ "$$cur" -lt "$$2" ]; then echo "$$2" > "$$1"; echo "$$1: $$cur -> $$2"; else echo "$$1: $$cur (ok)"; fi; }
+        raise() {
+          cur=$$(cat "$$1")
+          if [ "$$cur" -ge "$$2" ]; then
+            echo "$$1: $$cur (ok)"
+          elif (echo "$$2" > "$$1") 2>/dev/null; then
+            echo "$$1: $$cur -> $$2"
+          else
+            echo "WARNING: $$1 is $$cur and could not be raised to $$2"
+          fi
+        }
         raise /proc/sys/fs/inotify/max_user_instances 1024
         raise /proc/sys/vm/max_map_count 1048576
     volumes:
@@ -44,7 +64,7 @@ services:
       setup:
         condition: service_completed_successfully
 
-    # Upstream's required capabilities and security options (systemd in an
+    # Upstream's capabilities and security options (systemd in an
     # unprivileged container, Flatpak/Proton sandboxes, virtual input).
     # writable-cgroups needs Docker 28+ (umbrelOS 2.0: 28.5, 2.1: 29).
     cap_add:
@@ -53,13 +73,7 @@ services:
       - SYS_ADMIN
       - SYS_NICE
       - SYS_PTRACE
-      # Not in upstream's list. On umbrelOS the host render group (GID 991,
-      # owner of /dev/dri/renderD128) is the image's pipewire group, so the
-      # desktop user joins pipewire for GPU access. The image's
-      # /etc/security/limits.d/25-pw-rlimits.conf then gives it rtprio 70 and
-      # nice -19, which pam_limits cannot apply without SYS_RESOURCE (even
-      # under raised ulimits): every runuser fails with "cannot open
-      # session: Permission denied" and the container restarts in a loop.
+      # Added for umbrelOS, see "pipewire limits" below.
       - SYS_RESOURCE
     security_opt:
       - apparmor:unconfined
@@ -68,33 +82,38 @@ services:
       - writable-cgroups=true
     cgroup: private
 
+    # pipewire limits: on umbrelOS the host render group (GID 991, owner of
+    # renderD128) is the image's pipewire group, so the desktop user joins
+    # pipewire for GPU access. The image's limits.d/25-pw-rlimits.conf then
+    # sets rtprio 70 and nice -19 at every runuser/login, which pam_limits
+    # can only do with SYS_RESOURCE ("runuser: cannot open session:
+    # Permission denied" and a restart loop otherwise). The hard limits
+    # below cover those values; tested together with SYS_RESOURCE.
+    ulimits:
+      rtprio: 70
+      nice: 40
+      memlock: -1
+
     # Graceful systemd shutdown
     stop_signal: SIGRTMIN+3
     stop_grace_period: 30s
     pids_limit: 8192
     shm_size: 2gb
     tty: true
-    # pipewire limits (see SYS_RESOURCE above): hard limits that cover the
-    # image's limits.d values (rtprio 70, nice -19 = RLIMIT_NICE 39, memlock
-    # 4 GiB). Tested together with SYS_RESOURCE on umbrelOS 2.0.
-    ulimits:
-      rtprio: 70
-      nice: 40
-      memlock: -1
 
     environment:
       PUID: "1000"
       PGID: "1000"
       TZ: Asia/Seoul
 
-    # Only the render node, as upstream does (no card*: the desktop is
-    # headless). On a machine with a second GPU, check /dev/dri/by-path.
+    # Only the render node, as upstream does (headless: no card*). With a
+    # second GPU, check /dev/dri/by-path for the right renderD node.
     devices:
       - /dev/dri/renderD128:/dev/dri/renderD128
       - /dev/fuse:/dev/fuse
       - /dev/uinput:/dev/uinput
       - /dev/uhid:/dev/uhid
-    # Dynamic input event minors for Sunshine and virtual controllers
+    # Input event devices created by Sunshine and virtual controllers
     device_cgroup_rules:
       - "c 13:* rwm"
 
@@ -107,12 +126,12 @@ services:
     volumes:
       - /etc/localtime:/run/host-localtime:ro
       - /sys/devices/virtual/input:/sys/devices/virtual/input:ro
-      # Appliance state: SHUI credentials, TLS certificate (root-owned)
+      # SHUI credentials and TLS certificate (root-owned)
       - ${APP_DATA_DIR}/data/state:/var/lib/steam-headless
       # systemd journal (7 days)
       - ${APP_DATA_DIR}/data/journal:/var/log/journal
       # Desktop profile, Steam client, Proton prefixes, saves (UID 1000)
       - ${APP_DATA_DIR}/data/home:/home/steamheadless
-      # Game library: Downloads/steam. Add /mnt/games as a Steam library
-      # folder (Steam → Settings → Storage) after the first login.
+      # Games: Downloads/steam; the container creates the Steam library in
+      # /mnt/games/GameLibrary/Steam.
       - ${UMBREL_ROOT}/data/storage/downloads/steam:/mnt/games
