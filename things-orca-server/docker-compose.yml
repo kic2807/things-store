@@ -1,0 +1,37 @@
+version: "3.7"
+
+# Orca's headless server (`orca serve`): repos, worktrees and coding agents
+# (Claude Code, Codex, ...) run here; the Orca desktop app on a Mac (or Orca
+# Mobile) connects to it as a remote server.
+#
+# The runtime speaks WebSocket on 6768, published directly (no app_proxy):
+# umbrelOS would put its own HTTPS proxy on the manifest port, so that is a
+# placeholder (30113). Access needs a pairing token (`orca pair`, see README).
+# LAN/Tailscale only: do not port-forward 6768.
+
+services:
+  server:
+    # Built in this repo from the official release bundle
+    # (.github/workflows/build-orca-server.yml).
+    image: ghcr.io/kic2807/orca-server:1.4.258-r1@sha256:da57ef69ed1c708e3d161d4e06cf5b83cd2bbad290d8a3ca64637f723017e2c2
+    restart: on-failure
+    init: true
+    # The agents run as the umbrel user (1000) with no capabilities: no sudo,
+    # no apt. Tools go into ~/.local (npm prefix, Claude Code's installer).
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    stop_grace_period: 30s
+    ports:
+      - "6768:6768"
+    environment:
+      TZ: Asia/Seoul
+    volumes:
+      # Everything persistent: Orca's profile (~/.config/orca), agent logins
+      # (~/.claude, ~/.codex), git/gh/ssh config, ~/.local tools and the
+      # repos you clone (e.g. ~/projects).
+      - ${APP_DATA_DIR}/data/home:/home/orca
+      # Orca seals stored credentials with a key mixed with the machine ID;
+      # the host's keeps them readable across image updates.
+      - /etc/machine-id:/etc/machine-id:ro

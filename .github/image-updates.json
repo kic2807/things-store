@@ -80,6 +80,12 @@
       "tag": "^(?P<v>\\d+\\.\\d+)\\.(?P<d>\\d{8})\\.(?P<n>\\d+)$",
       "always_review": ["major", "minor", "patch", "build"]
     },
+    "ghcr.io/kic2807/orca-server": {
+      "_comment": "Built by .github/workflows/build-orca-server.yml from stablyai/orca releases (near daily); tag <orca version>-r<REVISION>. The server should track the desktop app, which updates itself, so minor and patch updates are merged; a major version gets a PR.",
+      "tag": "^(?P<v>\\d+\\.\\d+\\.\\d+)-r(?P<r>\\d+)$",
+      "always_review": ["major"],
+      "automerge": ["minor", "patch", "build"]
+    },
     "cloudflare/cloudflared": {
       "_comment": "Sidecar of things-subsy-cost. Calendar versions YYYY.M.P: a new year is a 'major' bump and is reviewed.",
       "tag": "^(?P<v>\\d{4}\\.\\d+\\.\\d+)$",
@@ -97,6 +103,7 @@
     "things-immich-ml": { "primary": "ghcr.io/immich-app/immich-machine-learning" },
     "things-cleanuparr": { "primary": "ghcr.io/cleanuparr/cleanuparr" },
     "things-subsy-cost": { "primary": "ghcr.io/kic2807/subsy-cost-server" },
-    "things-steam-headless": { "primary": "josh5/steam-headless" }
+    "things-steam-headless": { "primary": "josh5/steam-headless" },
+    "things-orca-server": { "primary": "ghcr.io/kic2807/orca-server" }
   }
 }

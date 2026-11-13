@@ -1,0 +1,30 @@
+manifestVersion: 1
+id: things-orca-server
+category: developer
+name: Orca Server
+version: "1.4.258"
+tagline: Run Orca's coding agents and worktrees on this server
+icon: https://raw.githubusercontent.com/kic2807/things-store/main/things-orca-server/icon.svg
+description: >-
+  Orca's headless server (orca serve). Repositories, worktrees, terminals and coding agents such as Claude Code and Codex run on the Umbrel, so they keep working when your laptop sleeps. The Orca desktop app connects to it under Settings → Remote Orca Servers, and Orca Mobile can connect too.
+
+
+  No web UI: the home screen icon does nothing (its port, 30113, is only a placeholder). The server listens on port 6768. Pair a client by running `orca pair` in the container, install and sign in to the agent CLIs once, and clone your repositories. LAN and Tailscale only. See the README in the store repository.
+releaseNotes: >-
+  First version.
+
+developer: Stably AI
+website: https://orca.dev
+dependencies: []
+repo: https://github.com/stablyai/orca
+support: https://github.com/stablyai/orca/issues
+
+port: 30113
+gallery: []
+path: ""
+
+defaultUsername: ""
+defaultPassword: ""
+
+submitter: kic2807
+submission: https://github.com/kic2807/things-store

@@ -32,6 +32,7 @@ The apps show up under **Haus Things App Store**.
 | [things-cleanuparr](things-cleanuparr/README.md) | 2.10.12 | 30110 | Removes stalled and failed downloads from the Sonarr/Radarr queues, blocklists them and searches again (Transmission). | web setup |
 | [things-subsy-cost](things-subsy-cost/README.md) | 1.0.0 | — (30111 placeholder) | Subsy Cost API for the iOS app: Superset → SQLite on a schedule, served through Cloudflare Tunnel + Access. No web UI. | `.env` |
 | [things-steam-headless](things-steam-headless/README.md) | 2.44-4 | 8483 HTTPS, direct (30112 placeholder) | Steam desktop (KDE, Proton, Sunshine) streamed to a browser, Moonlight or Steam Remote Play. Host network, needs a GPU with video encoding and 16 GB+ RAM. Most privileged app here. | web setup |
+| [things-orca-server](things-orca-server/README.md) | 1.4.258 | 6768 WebSocket, direct (30113 placeholder) | Orca's headless server: repos, worktrees and coding agents (Claude Code, Codex) run here; the Orca desktop app and Orca Mobile connect as clients. No web UI. | `orca pair` + agent logins |
 
 "No web UI" apps have no `app_proxy`; the manifest port is only a placeholder
 and opening them from the home screen shows nothing. Check them with

@@ -25,11 +25,12 @@ ICONS = {
     "things-immich-ml": ("https://cdn.jsdelivr.net/gh/selfhst/icons/svg/immich-light.svg", "#4250af", 0.66),
     "things-cleanuparr": ("https://raw.githubusercontent.com/Cleanuparr/Cleanuparr/main/Logo/logo.svg", "#efe6f7", 0.8),
     "things-steam-headless": ("steam", "#1b2838", 0.68),
+    "things-orca-server": ("https://raw.githubusercontent.com/stablyai/orca/main/resources/logo.svg", "#111111", 0.74),
 }
 
 
 def wrap(svg: str, background: str, share: float) -> str:
-    svg = re.sub(r"<\?xml[^>]*\?>", "", svg).strip()
+    svg = re.sub(r"<\?xml[^>]*\?>|<!--.*?-->", "", svg, flags=re.S).strip()
     head = re.match(r"<svg\b([^>]*)>", svg)
     attrs = head.group(1)
     view_box = re.search(r'viewBox="([^"]+)"', attrs)
