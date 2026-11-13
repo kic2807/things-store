@@ -2,7 +2,7 @@ manifestVersion: 1
 id: things-steam-headless
 category: gaming
 name: Steam Headless
-version: "2.44-4"
+version: "2.44-5"
 tagline: Steam desktop for browser, Moonlight and Remote Play streaming
 icon: https://raw.githubusercontent.com/kic2807/things-store/main/things-steam-headless/icon.svg
 description: >-
@@ -11,7 +11,7 @@ description: >-
 
   Needs an Intel or AMD GPU with hardware video encoding (/dev/dri/renderD128) and at least 16 GB of RAM. Open https://<your-umbrel-ip>:8483 directly (HTTPS, self-signed certificate). The home screen icon does not work: its port (30112) is only a placeholder. Sign in as steamheadless; the first sign-in uses a temporary password from the app logs. Games are stored in Downloads/steam. LAN and Tailscale only. See the README in the store repository.
 releaseNotes: >-
-  The setup helper no longer runs in privileged mode: it only gets the two capabilities it needs, and a kernel limit it cannot raise is logged as a warning instead of stopping the app. README reorganised.
+  Sunshine now gets CAP_SYS_NICE (a systemd drop-in written by the setup helper), so its encoder can run at high GPU priority: no more "CAP_SYS_NICE capability is missing" warning, and less stream stutter when a game holds the GPU at 100%.
 
 developer: Steam Headless
 website: https://steamheadless.com

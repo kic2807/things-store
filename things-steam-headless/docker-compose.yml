@@ -6,6 +6,7 @@ version: "3.7"
 # changes, each explained where it is set:
 #   - setup service: game folder ownership and two host kernel limits
 #   - SYS_RESOURCE + ulimits: pipewire PAM limits (render GID clash)
+#   - Sunshine drop-in: CAP_SYS_NICE for its encoder (written by setup)
 #   - manifest port 30112 is a placeholder (umbrel-app.yml, README)
 #
 # Host network: SHUI on TCP+UDP 8483 (HTTPS, own login), Sunshine on
@@ -20,6 +21,8 @@ services:
   #   - host kernel limits, raised only, reset on reboot:
   #     fs.inotify.max_user_instances >= 1024 (KDE/Steam, EMFILE otherwise)
   #     vm.max_map_count >= 1048576 (Proton games)
+  #   - systemd drop-in giving Sunshine CAP_SYS_NICE (see the desktop's
+  #     volumes); rewritten every start, so it follows this file
   # A limit that cannot be raised is logged as a warning and the desktop
   # still starts. Same image as the desktop, so nothing extra to pull.
   # Capabilities: CHOWN for the folder, SYS_RESOURCE for the inotify limit
@@ -53,8 +56,15 @@ services:
         }
         raise /proc/sys/fs/inotify/max_user_instances 1024
         raise /proc/sys/vm/max_map_count 1048576
+        printf '%s\n' '# Written by things-steam-headless setup.' \
+          '# Sunshine runs as steamheadless with no capabilities; this' \
+          '# passes SYS_NICE from cap_add to it for encoder priority.' \
+          '[Service]' 'AmbientCapabilities=CAP_SYS_NICE' > /dropins/50-things-sys-nice.conf
+        echo "sunshine drop-in: AmbientCapabilities=CAP_SYS_NICE"
     volumes:
       - ${UMBREL_ROOT}/data/storage/downloads/steam:/games
+      # Docker creates it as root, which setup (no DAC_OVERRIDE) can write.
+      - ${APP_DATA_DIR}/data/sunshine.service.d:/dropins
 
   desktop:
     image: josh5/steam-headless:2.44.20261019.1@sha256:c60f4d7243a4d94515f722441fff90b752413bf6a45bb221c9a4ed55bc4d9108
@@ -135,3 +145,9 @@ services:
       # Games: Downloads/steam; the container creates the Steam library in
       # /mnt/games/GameLibrary/Steam.
       - ${UMBREL_ROOT}/data/storage/downloads/steam:/mnt/games
+      # Sunshine runs as steamheadless (User= in its unit), so it gets none
+      # of the container's capabilities: "CAP_SYS_NICE capability is
+      # missing", no high GPU priority for the encoder, stream stutter when
+      # a game holds the GPU at 100%. This drop-in (written by setup) passes
+      # SYS_NICE, already in cap_add, to Sunshine only.
+      - ${APP_DATA_DIR}/data/sunshine.service.d:/etc/systemd/system/steam-headless-sunshine.service.d:ro

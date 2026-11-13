@@ -66,6 +66,7 @@ Play from:
 | `app-data/…/data/home` | `/home/steamheadless` | desktop profile, Steam client, Proton prefixes, saves |
 | `app-data/…/data/state` | `/var/lib/steam-headless` | SHUI credentials and TLS certificate |
 | `app-data/…/data/journal` | `/var/log/journal` | systemd journal (7 days) |
+| `app-data/…/data/sunshine.service.d` | `/etc/systemd/system/steam-headless-sunshine.service.d` (read-only) | Sunshine drop-in, rewritten by `setup` on every start |
 
 Uninstalling deletes the app data (Steam login, saves not in Steam Cloud,
 Proton prefixes) but keeps the games in `Downloads/steam`.
@@ -83,7 +84,8 @@ Proton prefixes) but keeps the games in `Downloads/steam`.
   `SYS_RESOURCE`, no seccomp or AppArmor, unmasked `/proc` and `/sys`
   (`systempaths=unconfined`), writable cgroups, all input devices (`c 13:*`)
   and the host network: upstream's requirements for systemd, sandboxes and
-  virtual input, plus `SYS_RESOURCE` (below). A compromised game or desktop
+  virtual input, plus `SYS_RESOURCE` (below). Sunshine, which runs as `steamheadless`, gets
+  `SYS_NICE` only. A compromised game or desktop
   reaches the host more easily than with other apps. The `setup` helper only
   gets `CHOWN` and `SYS_RESOURCE` for a few seconds.
 - **Caddy:** upstream supports a reverse proxy for SHUI (HTTPS/WebSocket,
@@ -91,14 +93,15 @@ Proton prefixes) but keeps the games in `Downloads/steam`.
 
 ## umbrelOS specifics
 
-Three differences from upstream's compose, found on the first install
-(2026-11-12, umbrelOS 2.0, N100):
+Differences from upstream's compose, found on the first installs
+(2026-11, umbrelOS 2.0, N100):
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
 | Desktop restarts in a loop: `runuser: cannot open session: Permission denied` | Host `render` group (GID 991, owner of `renderD128`) is `pipewire` in the image. The desktop user joins it for GPU access, and the image's `limits.d/25-pw-rlimits.conf` (rtprio 70, nice -19) then needs `SYS_RESOURCE`. Raised ulimits alone did not help. | `SYS_RESOURCE` + `ulimits` on `desktop` (2.44-2) |
 | `https://<ip>:8483` shows *Client sent an HTTP request to an HTTPS server* | umbrelOS puts its own HTTPS proxy ("Umbrel Local HTTPS CA") on an app's **manifest port** and forwards plain HTTP; SHUI is HTTPS only. | Manifest port is a placeholder (30112); open 8483 directly (2.44-3) |
 | Moonlight does not discover the Umbrel | umbrelOS holds mDNS (UDP 5353), so the container disables its Avahi. | Add the Umbrel by IP |
+| Sunshine: *CAP_SYS_NICE capability is missing* (stream may stutter when a game holds the GPU at 100%) | Sunshine's unit runs it as `steamheadless` (`User=`), so it gets none of the container's capabilities, although `SYS_NICE` is in `cap_add` (upstream has the same). | `setup` writes a drop-in with `AmbientCapabilities=CAP_SYS_NICE`, mounted read-only into `steam-headless-sunshine.service.d` (2.44-5) |
 
 `setup` also raises two host kernel limits that umbrelOS sets too low, on
 every start (they reset on reboot; only raised, never lowered):
@@ -151,6 +154,8 @@ N100 box, umbrelOS 2.0:
 - [x] desktop boots, healthcheck healthy (31 checks)
 - [x] SHUI sign-in, permanent password set (2.44-3)
 - [x] `setup` with reduced capabilities (2.44-4): no `WARNING` lines
+- [ ] Sunshine has `SYS_NICE` (2.44-5): no *CAP_SYS_NICE capability is
+  missing* warning
 - [ ] Browser stream with hardware encoding (no encoder probe warning)
 - [ ] Steam login, a game installs into `Downloads/steam/GameLibrary/Steam`
 - [ ] Moonlight pairing and a game stream with controller input
