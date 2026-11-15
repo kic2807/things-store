@@ -158,7 +158,8 @@ N100 box, umbrelOS 2.0:
   no `WARNING` (2.44-4's reduced capabilities failed on inotify after a reboot)
 - [x] Sunshine drop-in applied: `CapAmb: 0000000000800000` (`CapEff` 0: Sunshine
   keeps it off until needed)
-- [ ] No *CAP_SYS_NICE capability is missing* warning while streaming (2.44-5)
+- [x] Sunshine log: `EGL: context priority set to HIGH`, no *CAP_SYS_NICE
+  capability is missing* (2.44-5)
 - [ ] Browser stream with hardware encoding (no encoder probe warning)
 - [ ] Steam login, a game installs into `Downloads/steam/GameLibrary/Steam`
 - [ ] Moonlight pairing and a game stream with controller input
