@@ -154,10 +154,11 @@ N100 box, umbrelOS 2.0:
 - [x] `setup` exits 0, `Downloads/steam` owned by 1000, limits raised
 - [x] desktop boots, healthcheck healthy (31 checks)
 - [x] SHUI sign-in, permanent password set (2.44-3)
-- [ ] `setup` after a host reboot (2.44-6, privileged again): no `WARNING`
-  lines (2.44-4's reduced capabilities failed on inotify after a reboot)
-- [ ] Sunshine has `SYS_NICE` (2.44-5): no *CAP_SYS_NICE capability is
-  missing* warning
+- [x] `setup` after a host reboot (2.44-6, privileged again): `256 -> 1024`,
+  no `WARNING` (2.44-4's reduced capabilities failed on inotify after a reboot)
+- [x] Sunshine drop-in applied: `CapAmb: 0000000000800000` (`CapEff` 0: Sunshine
+  keeps it off until needed)
+- [ ] No *CAP_SYS_NICE capability is missing* warning while streaming (2.44-5)
 - [ ] Browser stream with hardware encoding (no encoder probe warning)
 - [ ] Steam login, a game installs into `Downloads/steam/GameLibrary/Steam`
 - [ ] Moonlight pairing and a game stream with controller input
