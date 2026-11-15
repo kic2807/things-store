@@ -127,12 +127,15 @@ The agent for the [Orbit launcher](https://github.com/kic2807/orbit-launcher)
 lists the Steam library, launches and quits games through the running Steam
 client, reports game start/ready/exit events and serves artwork (IGDB). HTTP
 on **TCP 47800**, every route except `/v1/health` needs the access token.
-LAN and Tailscale only: do not port-forward 47800.
+LAN and Tailscale only: do not port-forward 47800. Idle (agent 0.3.0+): no
+timer wake-ups while no Orbit client is connected; the running-game check
+runs only while a client is subscribed or called in the last 2 minutes.
 
 **Steam games in Sunshine/Moonlight** (agent 0.2.0+): the agent keeps one
 Sunshine application per installed Steam game in
-`~/.config/sunshine/apps.json`, checked every 30 s, with Steam's cover art.
-Moonlight shows a new game on its next app-list refresh; no restart. Only
+`~/.config/sunshine/apps.json`, with Steam's cover art. It reacts to file
+changes (inotify), not a timer: a game appears a few seconds after its
+install finishes, on Moonlight's next app-list refresh; no restart. Only
 entries marked `"orbit-steam-appid"` are touched: Desktop, Steam Big
 Picture and your own entries stay first and unchanged, and an entry you edit
 in Sunshine's web UI becomes yours. Details: orbit-launcher
@@ -217,7 +220,7 @@ N100 box, umbrelOS 2.0:
   active, `/v1/health` ok, `/v1/library` lists games, `/v1/launch` starts
   one, `/v1/session` turns `ready`, `/v1/quit` closes it (2.44-7)
 - [ ] Installed Steam games appear in Moonlight's app list and start
-  (agent 0.2.0, 2.44-9)
+  (agent 0.3.0, 2.44-10)
 - [ ] Browser stream with hardware encoding (no encoder probe warning)
 - [ ] Steam login, a game installs into `Downloads/steam/GameLibrary/Steam`
 - [ ] Moonlight pairing and a game stream with controller input
