@@ -105,10 +105,11 @@ services:
   # systemd unit and an access token (made once, kept) into data/orbit, and
   # a Sunshine drop-in (Wants=orbit-agent.service) next to setup's, so the
   # agent starts with Sunshine. The agent runs in the desktop as
-  # steamheadless on TCP 47800 (library, launch, game events, artwork).
+  # steamheadless on TCP 47800 (library, launch, game events, artwork) and
+  # keeps one Sunshine application per installed Steam game (0.2.0+).
   # Public package (built from the private repository), no login needed.
   orbit-agent:
-    image: ghcr.io/kic2807/orbit-agent:0.1.0@sha256:537d57472e32a4b72ec6381bcd86fd8bd768fcaccfade72e08f7dc887db07be4
+    image: ghcr.io/kic2807/orbit-agent:0.2.0@sha256:8d85256125b18e82d20c47602f16f8b0a8e2670104f06547552eabc696b02070
     restart: "no"
     user: "0:0"
     cap_drop:

@@ -129,6 +129,15 @@ client, reports game start/ready/exit events and serves artwork (IGDB). HTTP
 on **TCP 47800**, every route except `/v1/health` needs the access token.
 LAN and Tailscale only: do not port-forward 47800.
 
+**Steam games in Sunshine/Moonlight** (agent 0.2.0+): the agent keeps one
+Sunshine application per installed Steam game in
+`~/.config/sunshine/apps.json`, checked every 30 s, with Steam's cover art.
+Moonlight shows a new game on its next app-list refresh; no restart. Only
+entries marked `"orbit-steam-appid"` are touched: Desktop, Steam Big
+Picture and your own entries stay first and unchanged, and an entry you edit
+in Sunshine's web UI becomes yours. Details: orbit-launcher
+`agent/deploy/README.md` → *Sunshine applications*.
+
 The installer image `ghcr.io/kic2807/orbit-agent` is a public package
 (built from the private repository), so the Umbrel pulls it without a login.
 If it ever fails to pull, the whole app does not start.
@@ -207,6 +216,8 @@ N100 box, umbrelOS 2.0:
 - [ ] Orbit agent: `orbit-agent: installed`, `systemctl status orbit-agent`
   active, `/v1/health` ok, `/v1/library` lists games, `/v1/launch` starts
   one, `/v1/session` turns `ready`, `/v1/quit` closes it (2.44-7)
+- [ ] Installed Steam games appear in Moonlight's app list and start
+  (agent 0.2.0, 2.44-9)
 - [ ] Browser stream with hardware encoding (no encoder probe warning)
 - [ ] Steam login, a game installs into `Downloads/steam/GameLibrary/Steam`
 - [ ] Moonlight pairing and a game stream with controller input
