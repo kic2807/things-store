@@ -2,7 +2,7 @@ manifestVersion: 1
 id: things-steam-headless
 category: gaming
 name: Steam Headless
-version: "2.44-7"
+version: "2.44-8"
 tagline: Steam desktop for browser, Moonlight and Remote Play streaming
 icon: https://raw.githubusercontent.com/kic2807/things-store/main/things-steam-headless/icon.svg
 description: >-
@@ -11,7 +11,7 @@ description: >-
 
   Needs an Intel or AMD GPU with hardware video encoding (/dev/dri/renderD128) and at least 16 GB of RAM. The home screen icon opens a page that forwards to https://<your-umbrel>:8483 (HTTPS, self-signed certificate). Sign in as steamheadless; the first sign-in uses a temporary password from the app logs. Games are stored in Downloads/steam. Includes the Orbit agent (port 47800) for the Orbit launcher. LAN and Tailscale only. See the README in the store repository.
 releaseNotes: >-
-  The home screen icon now works: it forwards to https://<host>:8483. Adds the Orbit agent (port 47800) for the Orbit launcher: game library, launch and game events, artwork. Its image is private, so the Umbrel must be logged in to ghcr.io (see the README).
+  Fixes 2.44-7, where the desktop did not start: the Orbit agent installer could not set its token file's permissions. Includes 2.44-7: working home screen icon (forwards to https://<host>:8483) and the Orbit agent on port 47800.
 
 developer: Steam Headless
 website: https://steamheadless.com

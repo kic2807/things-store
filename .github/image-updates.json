@@ -86,6 +86,12 @@
       "always_review": ["major"],
       "automerge": ["minor", "patch", "build"]
     },
+    "ghcr.io/kic2807/orbit-agent": {
+      "_comment": "Orbit agent installer for things-steam-headless, built by kic2807/orbit-launcher (private repo, public package) from agent/VERSION. Own code, so minor and patch updates are merged.",
+      "tag": "^(?P<v>\\d+\\.\\d+\\.\\d+)$",
+      "always_review": ["major"],
+      "automerge": ["minor", "patch"]
+    },
     "cloudflare/cloudflared": {
       "_comment": "Sidecar of things-subsy-cost. Calendar versions YYYY.M.P: a new year is a 'major' bump and is reviewed.",
       "tag": "^(?P<v>\\d{4}\\.\\d+\\.\\d+)$",

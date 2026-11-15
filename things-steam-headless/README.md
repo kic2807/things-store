@@ -14,7 +14,7 @@ Play from:
 | Service | Image | What |
 |---------|-------|------|
 | `setup` | `josh5/steam-headless` (same image) | one-shot on every start: owns `Downloads/steam`, raises two host kernel limits, writes the Sunshine drop-in, exits |
-| `orbit-agent` | `ghcr.io/kic2807/orbit-agent` (private) | one-shot on every start: installs the [Orbit agent](#orbit-agent) into app data, exits |
+| `orbit-agent` | `ghcr.io/kic2807/orbit-agent` | one-shot on every start: installs the [Orbit agent](#orbit-agent) into app data, exits |
 | `open` | `ghcr.io/kic2807/caddy-cloudflare` (as things-caddy) | home screen icon: page on `127.0.0.1:30112` that forwards to `https://<host>:8483` |
 | `desktop` | `josh5/steam-headless` | the desktop, host network |
 
@@ -129,16 +129,9 @@ client, reports game start/ready/exit events and serves artwork (IGDB). HTTP
 on **TCP 47800**, every route except `/v1/health` needs the access token.
 LAN and Tailscale only: do not port-forward 47800.
 
-**Before updating to 2.44-7:** the installer image is private, so the
-Umbrel pulls it with its ghcr.io login (the one made for things-subsy-cost).
-Check it works, or the whole app fails to update:
-
-```sh
-sudo docker pull ghcr.io/kic2807/orbit-agent:0.1.0
-```
-
-If that is denied: `sudo docker login ghcr.io -u kic2807` with a token that
-has `read:packages`.
+The installer image `ghcr.io/kic2807/orbit-agent` is a public package
+(built from the private repository), so the Umbrel pulls it without a login.
+If it ever fails to pull, the whole app does not start.
 
 **Connect Orbit:** read the token once and enter it in Orbit (Settings →
 Network → Agent token; port 47800):
@@ -151,9 +144,10 @@ Optional: in Sunshine (SHUI → Sunshine), add an application named `Orbit`
 with no command; Orbit streams it while the agent runs the game, otherwise
 `Desktop`.
 
-**Updates:** a new agent version is a new `agent/VERSION` in orbit-launcher
-(its workflow pushes `orbit-agent:<VERSION>`), then a new pin here. Not
-automated: the store's update job cannot read the private package.
+**Updates:** bump `agent/VERSION` in orbit-launcher; its workflow pushes
+`orbit-agent:<VERSION>` and the store's daily update job opens (and for
+minor/patch merges) the things-steam-headless PR. A push without a version
+bump overwrites the tag and is not picked up.
 
 ## Troubleshooting
 

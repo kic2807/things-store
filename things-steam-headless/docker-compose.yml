@@ -106,16 +106,19 @@ services:
   # a Sunshine drop-in (Wants=orbit-agent.service) next to setup's, so the
   # agent starts with Sunshine. The agent runs in the desktop as
   # steamheadless on TCP 47800 (library, launch, game events, artwork).
-  # Private package: the Umbrel pulls it with its ghcr.io login (as for
-  # things-subsy-cost).
+  # Public package (built from the private repository), no login needed.
   orbit-agent:
     image: ghcr.io/kic2807/orbit-agent:0.1.0@sha256:537d57472e32a4b72ec6381bcd86fd8bd768fcaccfade72e08f7dc887db07be4
     restart: "no"
     user: "0:0"
     cap_drop:
       - ALL
+    # CHOWN hands the token to steamheadless (1000); FOWNER lets root then
+    # chmod it 0600 (install.sh chowns before it chmods; without FOWNER:
+    # "chmod: /out/token: Operation not permitted", desktop never starts).
     cap_add:
       - CHOWN
+      - FOWNER
     security_opt:
       - no-new-privileges:true
     volumes:
