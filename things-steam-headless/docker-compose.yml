@@ -7,10 +7,14 @@ version: "3.7"
 #   - setup service: game folder ownership and two host kernel limits
 #   - SYS_RESOURCE + ulimits: pipewire PAM limits (render GID clash)
 #   - Sunshine drop-in: CAP_SYS_NICE for its encoder (written by setup)
-#   - manifest port 30112 is a placeholder (umbrel-app.yml, README)
+#   - manifest port 30112: umbrelOS forwards it (after the Umbrel login) as
+#     plain HTTP to 127.0.0.1:30112, but SHUI only speaks HTTPS on 8483, so
+#     `open` answers there and sends the browser on to https://<host>:8483
+# Plus the Orbit agent (kic2807/orbit-launcher), installed by `orbit-agent`.
 #
 # Host network: SHUI on TCP+UDP 8483 (HTTPS, own login), Sunshine on
-# 47984-48010, Steam Remote Play on its usual ports. No app_proxy.
+# 47984-48010, Orbit agent on TCP 47800, Steam Remote Play on its usual
+# ports. No app_proxy.
 # LAN/Tailscale only: do not port-forward.
 
 services:
@@ -60,12 +64,72 @@ services:
       # Sunshine drop-in, mounted read-only by the desktop
       - ${APP_DATA_DIR}/data/sunshine.service.d:/dropins
 
+  # Home screen icon: a page on 127.0.0.1:30112 that sends the browser to
+  # SHUI on the host name it used (umbrel, umbrel.local, LAN or Tailscale
+  # IP), port 8483. JavaScript, because umbrelOS's proxy may not pass the
+  # original host name. Same Caddy image as things-caddy (already pulled).
+  open:
+    image: ghcr.io/kic2807/caddy-cloudflare:2.11.7-cf0.2.4@sha256:a13874bd33fdedf41b20feb5b25f61347d2807e2f3644ca624ae7491d270718d
+    restart: on-failure
+    network_mode: host
+    user: "1000:1000"
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      XDG_CONFIG_HOME: /tmp
+      XDG_DATA_HOME: /tmp
+    tmpfs:
+      - /tmp
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        cat > /tmp/Caddyfile <<'CADDY'
+        {
+        	admin off
+        	persist_config off
+        	auto_https off
+        }
+        http://:30112 {
+        	bind 127.0.0.1
+        	header Content-Type "text/html; charset=utf-8"
+        	header Cache-Control no-store
+        	respond `<!doctype html><meta charset="utf-8"><title>Steam Headless</title><script>location.replace("https://"+location.hostname+":8483/")</script><p>Opening Steam Headless on port 8483 (HTTPS)...</p>` 200
+        }
+        CADDY
+        exec caddy run --adapter caddyfile --config /tmp/Caddyfile
+
+  # One-shot, before the desktop: the Orbit agent installer
+  # (kic2807/orbit-launcher, agent/deploy). Copies the agent binary, its
+  # systemd unit and an access token (made once, kept) into data/orbit, and
+  # a Sunshine drop-in (Wants=orbit-agent.service) next to setup's, so the
+  # agent starts with Sunshine. The agent runs in the desktop as
+  # steamheadless on TCP 47800 (library, launch, game events, artwork).
+  # Private package: the Umbrel pulls it with its ghcr.io login (as for
+  # things-subsy-cost).
+  orbit-agent:
+    image: ghcr.io/kic2807/orbit-agent:0.1.0@sha256:537d57472e32a4b72ec6381bcd86fd8bd768fcaccfade72e08f7dc887db07be4
+    restart: "no"
+    user: "0:0"
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - ${APP_DATA_DIR}/data/orbit:/out
+      - ${APP_DATA_DIR}/data/sunshine.service.d:/dropins
+
   desktop:
     image: josh5/steam-headless:2.44.20261019.1@sha256:c60f4d7243a4d94515f722441fff90b752413bf6a45bb221c9a4ed55bc4d9108
     restart: on-failure
     network_mode: host
     depends_on:
       setup:
+        condition: service_completed_successfully
+      orbit-agent:
         condition: service_completed_successfully
 
     # Upstream's capabilities and security options (systemd in an
@@ -145,3 +209,7 @@ services:
       # a game holds the GPU at 100%. This drop-in (written by setup) passes
       # SYS_NICE, already in cap_add, to Sunshine only.
       - ${APP_DATA_DIR}/data/sunshine.service.d:/etc/systemd/system/steam-headless-sunshine.service.d:ro
+      # Orbit agent, written by orbit-agent before every start
+      - ${APP_DATA_DIR}/data/orbit/orbit-agent:/usr/local/bin/orbit-agent:ro
+      - ${APP_DATA_DIR}/data/orbit/orbit-agent.service:/etc/systemd/system/orbit-agent.service:ro
+      - ${APP_DATA_DIR}/data/orbit/token:/etc/orbit-agent-token:ro
