@@ -86,8 +86,9 @@ Proton prefixes) but keeps the games in `Downloads/steam`.
   and the host network: upstream's requirements for systemd, sandboxes and
   virtual input, plus `SYS_RESOURCE` (below). Sunshine, which runs as `steamheadless`, gets
   `SYS_NICE` only. A compromised game or desktop
-  reaches the host more easily than with other apps. The `setup` helper only
-  gets `CHOWN` and `SYS_RESOURCE` for a few seconds.
+  reaches the host more easily than with other apps. The `setup` helper runs
+  privileged for the few seconds it takes (reduced capabilities could not
+  raise the inotify limit, 2.44-4).
 - **Caddy:** upstream supports a reverse proxy for SHUI (HTTPS/WebSocket,
   WebRTC UDP still direct to 8483). Not set up here.
 
@@ -153,7 +154,8 @@ N100 box, umbrelOS 2.0:
 - [x] `setup` exits 0, `Downloads/steam` owned by 1000, limits raised
 - [x] desktop boots, healthcheck healthy (31 checks)
 - [x] SHUI sign-in, permanent password set (2.44-3)
-- [x] `setup` with reduced capabilities (2.44-4): no `WARNING` lines
+- [ ] `setup` after a host reboot (2.44-6, privileged again): no `WARNING`
+  lines (2.44-4's reduced capabilities failed on inotify after a reboot)
 - [ ] Sunshine has `SYS_NICE` (2.44-5): no *CAP_SYS_NICE capability is
   missing* warning
 - [ ] Browser stream with hardware encoding (no encoder probe warning)

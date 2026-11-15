@@ -25,20 +25,14 @@ services:
   #     volumes); rewritten every start, so it follows this file
   # A limit that cannot be raised is logged as a warning and the desktop
   # still starts. Same image as the desktop, so nothing extra to pull.
-  # Capabilities: CHOWN for the folder, SYS_RESOURCE for the inotify limit
-  # (a per-user-namespace sysctl); systempaths=unconfined makes /proc/sys
-  # writable. Nothing else, no privileged mode.
+  # Privileged, for the few seconds it runs: 2.44-4 tried CHOWN +
+  # SYS_RESOURCE + systempaths=unconfined, and after a host reboot the
+  # inotify limit could not be raised (256, "could not be raised").
   setup:
     image: josh5/steam-headless:2.44.20261019.1@sha256:c60f4d7243a4d94515f722441fff90b752413bf6a45bb221c9a4ed55bc4d9108
     restart: "no"
     user: "0:0"
-    cap_drop:
-      - ALL
-    cap_add:
-      - CHOWN
-      - SYS_RESOURCE
-    security_opt:
-      - systempaths=unconfined
+    privileged: true
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
@@ -63,7 +57,7 @@ services:
         echo "sunshine drop-in: AmbientCapabilities=CAP_SYS_NICE"
     volumes:
       - ${UMBREL_ROOT}/data/storage/downloads/steam:/games
-      # Docker creates it as root, which setup (no DAC_OVERRIDE) can write.
+      # Sunshine drop-in, mounted read-only by the desktop
       - ${APP_DATA_DIR}/data/sunshine.service.d:/dropins
 
   desktop:
