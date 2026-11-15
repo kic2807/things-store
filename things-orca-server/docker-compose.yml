@@ -13,7 +13,7 @@ services:
   server:
     # Built in this repo from the official release bundle
     # (.github/workflows/build-orca-server.yml).
-    image: ghcr.io/kic2807/orca-server:1.4.258-r1@sha256:da57ef69ed1c708e3d161d4e06cf5b83cd2bbad290d8a3ca64637f723017e2c2
+    image: ghcr.io/kic2807/orca-server:1.4.259-r1@sha256:20c6e994efd32512496390bab5958eba960814558b87d9542b3e71fd7bbfc6bd
     restart: on-failure
     init: true
     # The agents run as the umbrel user (1000) with no capabilities: no sudo,
