@@ -125,7 +125,8 @@ The agent for the [Orbit launcher](https://github.com/kic2807/orbit-launcher)
 `agent/API.md`). It runs inside the desktop as a systemd service under
 `steamheadless` and starts with Sunshine (after the first SHUI sign-in): it
 lists the Steam library, launches and quits games through the running Steam
-client, reports game start/ready/exit events and serves artwork (IGDB). HTTP
+client, reports game start/ready/exit events and serves artwork (Steam
+capsules; heroes from SteamGridDB or IGDB once a key is set in Orbit). HTTP
 on **TCP 47800**, every route except `/v1/health` needs the access token.
 LAN and Tailscale only: do not port-forward 47800. Idle (agent 0.3.0+): no
 timer wake-ups while no Orbit client is connected; the running-game check
@@ -140,6 +141,16 @@ entries marked `"orbit-steam-appid"` are touched: Desktop, Steam Big
 Picture and your own entries stay first and unchanged, and an entry you edit
 in Sunshine's web UI becomes yours. Details: orbit-launcher
 `agent/deploy/README.md` → *Sunshine applications*.
+
+**Whole Steam library, install and remove** (agent 0.5.0+, optional): in
+Orbit, Settings → Metadata → Steam account, scan the QR code with the Steam
+mobile app and approve. Orbit then also lists games that are not installed,
+and installs or removes them through this machine's Steam client (no prompt
+on the host's screen). The sign-in is separate from the Steam client's own,
+is kept in the agent's data (`~/.local/share/orbit-agent/config.json` in the
+desktop's home, so it survives updates), lasts for months, and shows up in
+the account's authorized devices, where it can be revoked. Without it,
+Orbit lists installed games only.
 
 The installer image `ghcr.io/kic2807/orbit-agent` is a public package
 (built from the private repository), so the Umbrel pulls it without a login.
@@ -221,6 +232,9 @@ N100 box, umbrelOS 2.0:
   one, `/v1/session` turns `ready`, `/v1/quit` closes it (2.44-7)
 - [ ] Installed Steam games appear in Moonlight's app list and start
   (agent 0.3.0, 2.44-10)
+- [ ] Steam sign-in from Orbit: `/v1/steam/library` has
+  `"steamOnline":true`, lists not-installed games, and one installs from
+  Orbit (agent 0.5.0, 2.44-11)
 - [ ] Browser stream with hardware encoding (no encoder probe warning)
 - [ ] Steam login, a game installs into `Downloads/steam/GameLibrary/Steam`
 - [ ] Moonlight pairing and a game stream with controller input

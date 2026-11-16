@@ -2,7 +2,7 @@ manifestVersion: 1
 id: things-steam-headless
 category: gaming
 name: Steam Headless
-version: "2.44-10"
+version: "2.44-11"
 tagline: Steam desktop for browser, Moonlight and Remote Play streaming
 icon: https://raw.githubusercontent.com/kic2807/things-store/main/things-steam-headless/icon.svg
 description: >-
@@ -11,7 +11,7 @@ description: >-
 
   Needs an Intel or AMD GPU with hardware video encoding (/dev/dri/renderD128) and at least 16 GB of RAM. The home screen icon opens a page that forwards to https://<your-umbrel>:8483 (HTTPS, self-signed certificate). Sign in as steamheadless; the first sign-in uses a temporary password from the app logs. Games are stored in Downloads/steam. Includes the Orbit agent (port 47800) for the Orbit launcher. LAN and Tailscale only. See the README in the store repository.
 releaseNotes: >-
-  Orbit agent 0.3.0: no timer wake-ups while idle. Steam games reach Sunshine as soon as an install finishes (file-change notifications instead of a 30-second check), and the running-game check only runs while an Orbit client is connected.
+  Orbit agent 0.5.0: browse your whole Steam library in Orbit and install or remove games from it (after an optional Steam sign-in from Orbit by QR code), Steam capsule art for tiles and SteamGridDB hero art.
 
 developer: Steam Headless
 website: https://steamheadless.com
