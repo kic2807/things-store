@@ -109,14 +109,15 @@ services:
   # keeps one Sunshine application per installed Steam game (0.2.0+).
   # Public package (built from the private repository), no login needed.
   orbit-agent:
-    image: ghcr.io/kic2807/orbit-agent:0.5.1@sha256:8cf475aca8d9413ba51adda82f4729751b4a671149f74f86b194d410bbda2d56
+    image: ghcr.io/kic2807/orbit-agent:0.5.3@sha256:6687b0cdcc127a5b4c800bb377bc805e91d37ce63c9bc8384cd67c04f01fc26c
     restart: "no"
     user: "0:0"
     cap_drop:
       - ALL
-    # CHOWN hands the token to steamheadless (1000); FOWNER lets root then
-    # chmod it 0600 (install.sh chowns before it chmods; without FOWNER:
-    # "chmod: /out/token: Operation not permitted", desktop never starts).
+    # CHOWN hands the token to steamheadless (1000). FOWNER stays although
+    # install.sh chmods before it chowns since 0.5.3: on an existing install
+    # the token already belongs to 1000, and root cannot chmod a file it does
+    # not own without FOWNER ("Operation not permitted", desktop never starts).
     cap_add:
       - CHOWN
       - FOWNER
