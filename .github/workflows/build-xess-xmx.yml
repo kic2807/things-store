@@ -6,12 +6,13 @@ name: Build xess-xmx
 # Upstream tags are dates, YYYYMMDD or YYYYMMDD-N for a second release that
 # day; the image version is YYYY.MMDD.N (N = 0 for the first). Built only
 # when that tag does not exist yet; bump REVISION for a rebuild of the same
-# release. Runs daily before "Update images", which then updates the app.
+# release. Checks hourly; after pushing a new tag it starts "Update images"
+# for this image only, which merges it into the app.
 
 on:
   schedule:
-    # Daily at 03:53 KST (18:53 UTC)
-    - cron: "53 18 * * *"
+    # Hourly at :53 (a run that finds nothing new takes seconds)
+    - cron: "53 * * * *"
   push:
     branches: [main]
     paths:
@@ -30,6 +31,7 @@ on:
 permissions:
   contents: read
   packages: write
+  actions: write
 
 concurrency:
   group: build-xess-xmx
@@ -142,3 +144,9 @@ jobs:
       - name: Digest
         if: steps.v.outputs.build == 'true'
         run: docker buildx imagetools inspect "${IMAGE}:${{ steps.v.outputs.tag }}"
+
+      - name: Update the app now
+        if: steps.v.outputs.build == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run update-images.yml -R "$GITHUB_REPOSITORY" -f image="$IMAGE"

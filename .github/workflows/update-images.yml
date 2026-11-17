@@ -5,6 +5,16 @@ on:
     # Daily at 04:23 KST (19:23 UTC)
     - cron: "23 19 * * *"
   workflow_dispatch:
+    inputs:
+      image:
+        description: "Only this image, e.g. ghcr.io/kic2807/orbit-agent (empty = everything)"
+        required: false
+  # Sent by an image's build once the new tag is pushed: this repo's own builds
+  # (build-xess-xmx.yml) and kic2807/orbit-launcher's agent build, with
+  # client_payload.image naming the image. Only that image is updated, and
+  # only if the update may be merged; the rest waits for the daily run.
+  repository_dispatch:
+    types: [image-built]
 
 permissions:
   contents: write
@@ -30,4 +40,5 @@ jobs:
       - name: Find updates, open PRs, merge allowed ones
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python3 -I .github/scripts/update_images.py --apply
+          IMAGE: ${{ inputs.image || github.event.client_payload.image }}
+        run: python3 -I .github/scripts/update_images.py --apply ${IMAGE:+--image "$IMAGE"}

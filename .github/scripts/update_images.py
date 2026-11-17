@@ -18,7 +18,9 @@ rest stays in the review PR, rebuilt on main every run. A change needs review wh
   - its bump kind is listed in the image's `always_review`, or
   - the image has no usable release notes and the bump kind is not in its
     `automerge` fallback list.
-Without --apply it only prints what it would do.
+Without --apply it only prints what it would do. --image <name> limits a run
+to one image (started by that image's build) and applies only updates allowed
+to merge.
 """
 
 import argparse
@@ -374,11 +376,17 @@ def apply_plan(plan, branch_suffix=""):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--apply", action="store_true", help="commit, open PRs and merge allowed ones")
+    parser.add_argument("--image", help="only this image (e.g. ghcr.io/kic2807/orbit-agent), in every app that pins it;"
+                        " for runs started by a new build. Only updates allowed to merge are applied; the others"
+                        " are left to the full daily run, which owns the review PRs")
     args = parser.parse_args()
+    only = (lambda c: c["name"] == args.image) if args.image else None
 
     for app, app_cfg in CONFIG["apps"].items():
+        if args.image and f"image: {args.image}:" not in (ROOT / app / "docker-compose.yml").read_text():
+            continue
         print(f"{app}:")
-        plan = plan_app(app, app_cfg)
+        plan = plan_app(app, app_cfg, keep=only)
         if not plan:
             print("  up to date")
             continue
@@ -388,6 +396,12 @@ def main():
                 print(f"    ! {line}")
         print(f"  version {plan['old_version']} -> {plan['new_version']}")
         if not args.apply:
+            continue
+        if args.image:
+            if plan["automerge"]:
+                apply_plan(plan, branch_suffix="-auto")
+            else:
+                print("  needs review: left to the daily run")
             continue
         mixed = not plan["automerge"] and any(c["automerge"] for c in plan["changes"])
         if not mixed:
