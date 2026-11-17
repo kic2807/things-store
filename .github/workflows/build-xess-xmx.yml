@@ -1,0 +1,144 @@
+name: Build xess-xmx
+
+# Builds ghcr.io/kic2807/xess-xmx:<version>-r<REVISION> (linux/amd64) for
+# things-steam-headless: the newest release zip of HHHHanasak1/xess-xmx-linux
+# (checked against the SHA-256 GitHub lists for it), see .github/xess-xmx.
+# Upstream tags are dates, YYYYMMDD or YYYYMMDD-N for a second release that
+# day; the image version is YYYY.MMDD.N (N = 0 for the first). Built only
+# when that tag does not exist yet; bump REVISION for a rebuild of the same
+# release. Runs daily before "Update images", which then updates the app.
+
+on:
+  schedule:
+    # Daily at 03:53 KST (18:53 UTC)
+    - cron: "53 18 * * *"
+  push:
+    branches: [main]
+    paths:
+      - .github/xess-xmx/**
+      - .github/workflows/build-xess-xmx.yml
+  workflow_dispatch:
+    inputs:
+      release:
+        description: "xess-xmx-linux release tag, e.g. 20261115 (empty = latest)"
+        required: false
+      force:
+        description: "Rebuild even if the tag exists"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: build-xess-xmx
+  cancel-in-progress: false
+
+env:
+  IMAGE: ghcr.io/kic2807/xess-xmx
+  UPSTREAM: HHHHanasak1/xess-xmx-linux
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pick release and tag
+        id: v
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          release="${{ inputs.release }}"
+          if [ -z "$release" ]; then
+            release=$(gh api "repos/$UPSTREAM/releases/latest" --jq .tag_name)
+          fi
+          case "$release" in
+            [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]) n=0 ;;
+            [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-[0-9]|[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-[0-9][0-9]) n=${release#*-} ;;
+            *) echo "unexpected release tag '$release'"; exit 1 ;;
+          esac
+          d=${release%%-*}
+          version="${d%????}.${d#????}.$n"
+          asset="xess-xmx-linux-$release.zip"
+          digest=$(gh api "repos/$UPSTREAM/releases/tags/$release" \
+            --jq ".assets[] | select(.name == \"$asset\") | .digest")
+          case "$digest" in
+            sha256:????????????????????????????????????????????????????????????????) ;;
+            *) echo "no sha256 digest for $asset in $release: '$digest'"; exit 1 ;;
+          esac
+          rev=$(cat .github/xess-xmx/REVISION)
+          tag="${version}-r${rev}"
+          echo "release=$release" >> "$GITHUB_OUTPUT"
+          echo "sha256=${digest#sha256:}" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "upstream $release ($digest) -> $tag"
+          token=$(curl -s "https://ghcr.io/token?scope=repository:kic2807/xess-xmx:pull" | python3 -c "import sys,json;print(json.load(sys.stdin).get('token',''))")
+          code=$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $token" \
+            -H "Accept: application/vnd.oci.image.index.v1+json" "https://ghcr.io/v2/kic2807/xess-xmx/manifests/$tag")
+          if [ "$code" = 200 ] && [ "${{ inputs.force }}" != "true" ]; then
+            echo "$IMAGE:$tag already exists"
+          else
+            echo "build=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: docker/setup-buildx-action@v3
+        if: steps.v.outputs.build == 'true'
+
+      - name: Build
+        if: steps.v.outputs.build == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: .github/xess-xmx
+          platforms: linux/amd64
+          build-args: |
+            XESS_XMX_RELEASE=${{ steps.v.outputs.release }}
+            XESS_XMX_SHA256=${{ steps.v.outputs.sha256 }}
+          load: true
+          tags: xess-xmx:test
+
+      - name: Check staging as the app runs it
+        if: steps.v.outputs.build == 'true'
+        run: |
+          # As steamheadless (1000) with no capabilities, like the app.
+          mkdir -p /tmp/out && sudo chown 1000:1000 /tmp/out
+          run() { docker run --rm --user 1000:1000 --cap-drop all \
+            --security-opt no-new-privileges:true -v /tmp/out:/out xess-xmx:test; }
+          run | tee /tmp/log1
+          grep -q "release ${{ steps.v.outputs.release }} staged" /tmp/log1
+          test -x /tmp/out/install.sh
+          sudo mkdir /tmp/out/igc && sudo touch /tmp/out/igc/keep
+          run | tee /tmp/log2
+          grep -q "already staged" /tmp/log2
+          test -e /tmp/out/igc/keep
+
+      - uses: docker/login-action@v3
+        if: steps.v.outputs.build == 'true'
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push
+        if: steps.v.outputs.build == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: .github/xess-xmx
+          platforms: linux/amd64
+          build-args: |
+            XESS_XMX_RELEASE=${{ steps.v.outputs.release }}
+            XESS_XMX_SHA256=${{ steps.v.outputs.sha256 }}
+          # Provenance makes the tag a multi-platform index, as update_images.py expects.
+          provenance: mode=min
+          push: true
+          tags: ${{ env.IMAGE }}:${{ steps.v.outputs.tag }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.description=xess-xmx-linux ${{ steps.v.outputs.release }} for things-steam-headless
+            org.opencontainers.image.version=${{ steps.v.outputs.tag }}
+            org.opencontainers.image.licenses=MIT
+
+      - name: Digest
+        if: steps.v.outputs.build == 'true'
+        run: docker buildx imagetools inspect "${IMAGE}:${{ steps.v.outputs.tag }}"

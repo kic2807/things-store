@@ -9,7 +9,10 @@ For each app listed in .github/image-updates.json:
     packaging revision when only other images changed) and `releaseNotes`.
 
 With --apply it commits each app to branch auto-update/<app>, opens or updates
-the PR, and merges it unless a change needs review. A change needs review when
+the PR, and merges it unless a change needs review. When an app has both kinds,
+the changes allowed to merge go first in their own PR (auto-update/<app>-auto,
+merged at once), so one held-back image does not hold back the others; the
+rest stays in the review PR, rebuilt on main every run. A change needs review when
   - the upstream release notes between the old and new version mention a
     breaking change, or
   - its bump kind is listed in the image's `always_review`, or
@@ -219,7 +222,8 @@ def replace_release_notes(manifest, text):
 
 # --- planning -------------------------------------------------------------
 
-def plan_app(app, app_cfg):
+def plan_app(app, app_cfg, keep=None):
+    """Plan an app's update; keep(change) -> bool limits it to some changes."""
     compose_path = ROOT / app / "docker-compose.yml"
     compose = compose_path.read_text()
     changes = []
@@ -284,6 +288,8 @@ def plan_app(app, app_cfg):
             "old_tag": tag, "new_tag": new_tag, "version": new_parsed[2], "kind": kind,
             "automerge": automerge, "reason": reason, "breaking": breaking or [],
         })
+    if keep:
+        changes = [c for c in changes if keep(c)]
     if not changes:
         return None
 
@@ -314,8 +320,8 @@ def run(*cmd, check=True):
     return subprocess.run(cmd, cwd=ROOT, check=check, text=True, capture_output=True).stdout.strip()
 
 
-def apply_plan(plan):
-    app, branch = plan["app"], f"auto-update/{plan['app']}"
+def apply_plan(plan, branch_suffix=""):
+    app, branch = plan["app"], f"auto-update/{plan['app']}{branch_suffix}"
     title = f"{app}: {plan['old_version']} -> {plan['new_version']}"
     rows = "\n".join(
         f"| `{c['name']}` | `{c['old_tag']}` | `{c['new_tag']}` | {c['kind']} | "
@@ -381,8 +387,21 @@ def main():
             for line in c["breaking"][:5]:
                 print(f"    ! {line}")
         print(f"  version {plan['old_version']} -> {plan['new_version']}")
-        if args.apply:
+        if not args.apply:
+            continue
+        mixed = not plan["automerge"] and any(c["automerge"] for c in plan["changes"])
+        if not mixed:
             apply_plan(plan)
+            continue
+        # Merge what may be merged now, then put the rest up for review on
+        # top of it (the review PR is rebuilt on the new main).
+        print("  merging the allowed changes first, the rest goes to review")
+        apply_plan(plan_app(app, app_cfg, keep=lambda c: c["automerge"]), branch_suffix="-auto")
+        run("git", "fetch", "-q", "origin", "main")
+        run("git", "reset", "-q", "--hard", "origin/main")
+        rest = plan_app(app, app_cfg)
+        if rest:
+            apply_plan(rest)
 
 
 if __name__ == "__main__":

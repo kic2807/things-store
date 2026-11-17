@@ -92,6 +92,11 @@
       "always_review": ["major"],
       "automerge": ["minor", "patch"]
     },
+    "ghcr.io/kic2807/xess-xmx": {
+      "_comment": "xess-xmx-linux package for things-steam-headless, built by .github/workflows/build-xess-xmx.yml from upstream's dated releases; tag <YYYY.MMDD.N>-r<REVISION>. Releases come every few days; a bad one makes XeSS fall back to its slower path rather than break games, so every update is merged.",
+      "tag": "^(?P<v>\\d{4}\\.\\d{4}\\.\\d+)-r(?P<r>\\d+)$",
+      "automerge": ["major", "minor", "patch", "build"]
+    },
     "cloudflare/cloudflared": {
       "_comment": "Sidecar of things-subsy-cost. Calendar versions YYYY.M.P: a new year is a 'major' bump and is reviewed.",
       "tag": "^(?P<v>\\d{4}\\.\\d+\\.\\d+)$",
