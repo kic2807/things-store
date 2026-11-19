@@ -10,7 +10,7 @@ version: "3.7"
 # LAN/Tailscale only: do not port-forward 6768.
 
 services:
-  # Creates Downloads/orca-projects owned by the umbrel user (Docker would
+  # Creates Documents/projects owned by the umbrel user (Docker would
   # create a missing folder as root, which the server could not write to).
   setup:
     image: ghcr.io/kic2807/orca-server:1.4.264-r1@sha256:34110a909f14c8f2e4b2d9152e5cd331f6704716c029f1b83e8faeb5820c49ef
@@ -24,7 +24,7 @@ services:
       - no-new-privileges:true
     entrypoint: ["chown", "1000:1000", "/projects"]
     volumes:
-      - ${UMBREL_ROOT}/data/storage/downloads/orca-projects:/projects
+      - ${UMBREL_ROOT}/home/Documents/projects:/projects
 
   server:
     # Built in this repo from the official release bundle
@@ -56,9 +56,9 @@ services:
       # (~/.claude, ~/.codex), git/gh/ssh config, ~/.local tools and the
       # repos you clone (e.g. ~/projects).
       - ${APP_DATA_DIR}/data/home:/home/orca
-      # Shared projects: Downloads/orca-projects in the Umbrel Files app (and
+      # Shared projects: Documents/projects in the Umbrel Files app (and
       # over SMB), ~/projects on the server. Kept when the app is uninstalled.
-      - ${UMBREL_ROOT}/data/storage/downloads/orca-projects:/home/orca/projects
+      - ${UMBREL_ROOT}/home/Documents/projects:/home/orca/projects
       # Orca seals stored credentials with a key mixed with the machine ID;
       # the host's keeps them readable across image updates.
       - /etc/machine-id:/etc/machine-id:ro

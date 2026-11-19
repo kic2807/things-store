@@ -57,7 +57,7 @@ C=things-orca-server_server_1
    `~/.ssh`. Set `git config --global user.name/user.email`; for
    kic2807 repos use the GitHub noreply address.
 6. Clone repositories into `~/projects`, or copy project folders into
-   **Downloads/orca-projects** with the Umbrel Files app (or over SMB): that
+   **Documents/projects** with the Umbrel Files app (or over SMB): that
    folder is `~/projects` on the server. Open them in Orca on the
    server.
 
@@ -66,11 +66,11 @@ C=things-orca-server_server_1
 | Host | Container | What |
 |------|-----------|------|
 | `app-data/things-orca-server/data/home` | `/home/orca` | everything: Orca's profile (`~/.config/orca`: pairing identity, sessions, stored credentials), agent logins (`~/.claude`, `~/.codex`), `~/.local` tools, git/gh/ssh config, cloned repos |
-| `data/storage/downloads/orca-projects` | `/home/orca/projects` | shared projects: Downloads/orca-projects in the Files app; kept on uninstall |
+| `home/Documents/projects` | `/home/orca/projects` | shared projects: Documents/projects in the Files app; kept on uninstall |
 | `/etc/machine-id` (read-only) | `/etc/machine-id` | Orca seals stored credentials with a key mixed with the machine ID; the host's stays the same across image updates |
 
 Uninstalling deletes the app-data folder, including uncommitted work in
-worktrees outside `~/projects`; Downloads/orca-projects stays.
+worktrees outside `~/projects`; Documents/projects stays.
 Orca's credential key sits next to the credentials in the same folder, so
 anyone who can read `app-data` (or a backup of it) can read them.
 
