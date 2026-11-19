@@ -287,7 +287,10 @@ N100 box, umbrelOS 2.0:
 - [ ] Browser stream with hardware encoding (no encoder probe warning)
 - [ ] Steam login, a game installs into `Downloads/steam/GameLibrary/Steam`
 - [ ] Moonlight pairing and a game stream with controller input
-- [ ] XeSS XMX (M2 Pro, Arc B390, 2.44-23): `xess-xmx: ready`, Steam log
-  `xess-xmx: on: ...`, a DX12 XeSS game shows XMX
+- [x] XeSS XMX staging and activation (M2 Pro, Arc B390 `0xb082`, 2.44-23):
+  `xess-xmx: ready` (bundles fetched), Steam log `xess-xmx: on: ...` in
+  stock mode (Mesa stock-26.3.1 + `VK_LAYER_XESS_xmx`), Steam loads the
+  package's driver
+- [ ] XeSS XMX in a game: a DX12 XeSS game runs XeSS on XMX
   (`XESS_LOG=2 %command%`, upstream troubleshooting), `XESS_FG=3` gives 3x
 - [ ] Moonlight / browser stream over Tailscale
