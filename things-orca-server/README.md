@@ -58,7 +58,8 @@ C=things-orca-server_server_1
    kic2807 repos use the GitHub noreply address.
 6. Clone repositories into `~/projects`, or copy project folders into
    **Documents/projects** with the Umbrel Files app (or over SMB): that
-   folder is `~/projects` on the server. Open them in Orca on the
+   folder is `~/projects` on the server (pick another folder in the app's
+   settings under Storage). Open them in Orca on the
    server.
 
 ## Storage

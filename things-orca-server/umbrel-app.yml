@@ -1,8 +1,17 @@
 manifestVersion: 1
 id: things-orca-server
+folderAccess:
+  - id: projects
+    name: Projects
+    note: Your project folders, ~/projects on the server. Copy projects here with the Files app, SMB or rsync.
+    mounts:
+      - service: server
+        targetPath: /home/orca/projects
+      - service: setup
+        targetPath: /projects
 category: developer
 name: Orca Server
-version: "1.4.264-1"
+version: "1.4.264-2"
 tagline: Run Orca's coding agents and worktrees on this server
 icon: https://raw.githubusercontent.com/kic2807/things-store/main/things-orca-server/icon.svg
 description: >-
@@ -11,7 +20,7 @@ description: >-
 
   No web UI: the home screen icon does nothing (its port, 30113, is only a placeholder). The server listens on port 6768. Pair a client by running `orca pair` in the container, install and sign in to the agent CLIs once, and clone your repositories. LAN and Tailscale only. See the README in the store repository.
 releaseNotes: >-
-  The shared projects folder is now Documents/projects in the Files app (~/projects on the server). Move anything you put in Downloads/orca-projects.
+  The projects folder can be chosen again in the app's settings (Storage); it defaults to Documents/projects.
 
 developer: Stably AI
 website: https://orca.dev
