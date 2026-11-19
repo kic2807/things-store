@@ -13,7 +13,7 @@ services:
   # Creates Documents/projects owned by the umbrel user (Docker would
   # create a missing folder as root, which the server could not write to).
   setup:
-    image: ghcr.io/kic2807/orca-server:1.4.264-r1@sha256:34110a909f14c8f2e4b2d9152e5cd331f6704716c029f1b83e8faeb5820c49ef
+    image: ghcr.io/kic2807/orca-server:1.4.264-r2@sha256:a07360916fd641ef11d1c61733b982703ff9a47f4bd418d81f6df3e6a09c1e5e
     restart: "no"
     user: "0:0"
     cap_drop:
@@ -29,7 +29,7 @@ services:
   server:
     # Built in this repo from the official release bundle
     # (.github/workflows/build-orca-server.yml).
-    image: ghcr.io/kic2807/orca-server:1.4.264-r1@sha256:34110a909f14c8f2e4b2d9152e5cd331f6704716c029f1b83e8faeb5820c49ef
+    image: ghcr.io/kic2807/orca-server:1.4.264-r2@sha256:a07360916fd641ef11d1c61733b982703ff9a47f4bd418d81f6df3e6a09c1e5e
     restart: on-failure
     init: true
     # The agents run as the umbrel user (1000) with no capabilities: no sudo,
