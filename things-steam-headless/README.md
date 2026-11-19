@@ -13,8 +13,9 @@ Play from:
 
 | Service | Image | What |
 |---------|-------|------|
-| `setup` | `josh5/steam-headless` (same image) | one-shot on every start: owns `Downloads/steam`, raises two host kernel limits, writes the Sunshine drop-in, exits |
+| `setup` | `josh5/steam-headless` (same image) | one-shot on every start: owns `Downloads/steam`, raises two host kernel limits, writes the Sunshine and Steam drop-ins, exits |
 | `orbit-agent` | `ghcr.io/kic2807/orbit-agent` | one-shot on every start: installs the [Orbit agent](#orbit-agent) into app data, exits |
+| `xess-xmx` | `ghcr.io/kic2807/xess-xmx` | one-shot on every start: stages [XeSS on XMX](#xess-on-xmx) into the desktop user's home, exits |
 | `open` | `ghcr.io/kic2807/caddy-cloudflare` (as things-caddy) | home screen icon: page on `127.0.0.1:30112` that forwards to `https://<host>:8483` |
 | `desktop` | `josh5/steam-headless` | the desktop, host network |
 
@@ -70,6 +71,8 @@ Play from:
 | `app-data/…/data/journal` | `/var/log/journal` | systemd journal (7 days) |
 | `app-data/…/data/orbit` | `/usr/local/bin/orbit-agent`, `/etc/systemd/system/orbit-agent.service`, `/etc/orbit-agent-token` (read-only) | Orbit agent binary, unit and access token (token made once, kept) |
 | `app-data/…/data/sunshine.service.d` | `/etc/systemd/system/steam-headless-sunshine.service.d` (read-only) | Sunshine drop-in, rewritten by `setup` on every start |
+| `app-data/…/data/steam.service.d` | `/etc/systemd/system/steam-headless-steam.service.d` (read-only) | Steam drop-in (XeSS XMX), rewritten by `setup` on every start |
+| `app-data/…/data/home/.xess-xmx` | `/home/steamheadless/.xess-xmx` | xess-xmx-linux package, its compiler/SDK bundles and kernel cache |
 
 Uninstalling deletes the app data (Steam login, saves not in Steam Cloud,
 Proton prefixes) but keeps the games in `Downloads/steam`.
@@ -172,6 +175,52 @@ with no command; Orbit streams it while the agent runs the game, otherwise
 minor/patch merges) the things-steam-headless PR. A push without a version
 bump overwrites the tag and is not picked up.
 
+## XeSS on XMX
+
+[xess-xmx-linux](https://github.com/HHHHanasak1/xess-xmx-linux) runs Intel
+XeSS super resolution and frame generation (up to 4x, `XESS_FG`) in Proton
+games on the XMX matrix units of Intel Arc GPUs, where stock Proton falls
+back to the slower DP4a path and 2x frame generation. It needs an Arc GPU
+with XMX units: Xe3 (Panther Lake, e.g. Arc B390), Xe2 (Battlemage, Lunar
+Lake) or Xe-HPG (Alchemist). On other GPUs (N100, Meteor Lake) it stays off
+by itself.
+
+How it is wired, since upstream's `install.sh` expects a desktop login and
+Steam Headless runs Steam as a system unit:
+
+1. `xess-xmx` copies the release into `home/.xess-xmx` (a new release over
+   the old one, keeping the bundles and compiled kernels), fetches Intel's
+   compiler and XeSS SDK and AMD's FidelityFX files once (~260 MB, checked
+   against hashes pinned in the package) and stages `activate.sh`.
+2. `setup` writes a drop-in for `steam-headless-steam.service`: before every
+   Steam start, `activate.sh` runs `install.sh` as steamheadless (shim into
+   every Proton and prefix, launch-option hook, watcher for Proton updates),
+   then runs upstream's driver check. Only if the GPU has XMX units and the
+   package's driver loads does it write `/run/xess-xmx/environment`, which
+   Steam, and so every game, starts with.
+
+In a game: pick the **DX12** renderer and turn on XeSS (and XeSS Frame
+Generation). Games with old XeSS, D3D11/Vulkan games or FSR-only games:
+`XESS=auto %command%` in the launch options; `XESS_FG=3` or `4` for more
+than 2x. The first launch of a game compiles its kernels (a minute or two,
+once). Details: upstream's
+[launch options](https://github.com/HHHHanasak1/xess-xmx-linux/blob/main/docs/launch-options.md)
+and [games](https://github.com/HHHHanasak1/xess-xmx-linux/blob/main/docs/games.md).
+
+```sh
+sudo docker logs things-steam-headless_xess-xmx_1                     # "xess-xmx: ready"
+sudo docker exec $C journalctl -u steam-headless-steam --no-pager | grep xess-xmx:   # "xess-xmx: on: ..."
+sudo docker exec $C cat /run/xess-xmx/environment
+```
+
+**Turn it off:** `touch ~/umbrel/app-data/things-steam-headless/data/home/.xess-xmx/DISABLED`
+and restart the app; `activate.sh` then runs upstream's `uninstall.sh` once
+and Steam starts without it. Delete the file to turn it on again.
+
+**Updates:** `.github/workflows/build-xess-xmx.yml` checks upstream hourly
+and builds `xess-xmx:<YYYY.MMDD.N>-r<n>`; the update is merged by itself
+(a broken release makes XeSS fall back to DP4a, not break games).
+
 ## Troubleshooting
 
 ```sh
@@ -238,4 +287,7 @@ N100 box, umbrelOS 2.0:
 - [ ] Browser stream with hardware encoding (no encoder probe warning)
 - [ ] Steam login, a game installs into `Downloads/steam/GameLibrary/Steam`
 - [ ] Moonlight pairing and a game stream with controller input
+- [ ] XeSS XMX (M2 Pro, Arc B390, 2.44-23): `xess-xmx: ready`, Steam log
+  `xess-xmx: on: ...`, a DX12 XeSS game shows XMX
+  (`XESS_LOG=2 %command%`, upstream troubleshooting), `XESS_FG=3` gives 3x
 - [ ] Moonlight / browser stream over Tailscale

@@ -10,7 +10,8 @@ version: "3.7"
 #   - manifest port 30112: umbrelOS forwards it (after the Umbrel login) as
 #     plain HTTP to 127.0.0.1:30112, but SHUI only speaks HTTPS on 8483, so
 #     `open` answers there and sends the browser on to https://<host>:8483
-# Plus the Orbit agent (kic2807/orbit-launcher), installed by `orbit-agent`.
+# Plus the Orbit agent (kic2807/orbit-launcher), installed by `orbit-agent`,
+# and XeSS on XMX for Proton games (xess-xmx-linux), staged by `xess-xmx`.
 #
 # Host network: SHUI on TCP+UDP 8483 (HTTPS, own login), Sunshine on
 # 47984-48010, Orbit agent on TCP 47800, Steam Remote Play on its usual
@@ -27,6 +28,8 @@ services:
   #     vm.max_map_count >= 1048576 (Proton games)
   #   - systemd drop-in giving Sunshine CAP_SYS_NICE (see the desktop's
   #     volumes); rewritten every start, so it follows this file
+  #   - Steam's drop-in for XeSS XMX (see xess-xmx below), likewise, and
+  #     the package folder (home/.xess-xmx) owned by the umbrel user
   # A limit that cannot be raised is logged as a warning and the desktop
   # still starts. Same image as the desktop, so nothing extra to pull.
   # Privileged, for the few seconds it runs: 2.44-4 tried CHOWN +
@@ -59,10 +62,23 @@ services:
           '# passes SYS_NICE from cap_add to it for encoder priority.' \
           '[Service]' 'AmbientCapabilities=CAP_SYS_NICE' > /dropins/50-things-sys-nice.conf
         echo "sunshine drop-in: AmbientCapabilities=CAP_SYS_NICE"
+        chown 1000:1000 /xess
+        printf '%s\n' '# Written by things-steam-headless setup.' \
+          '# XeSS XMX (xess-xmx-linux): before every Steam start, activate.sh' \
+          '# runs the package installer and, on a GPU with XMX units whose' \
+          '# driver loads, writes the environment Steam and its games get.' \
+          '[Service]' 'RuntimeDirectory=xess-xmx' \
+          'ExecStartPre=-/bin/bash /home/steamheadless/.xess-xmx/.things/activate.sh' \
+          'EnvironmentFile=-/run/xess-xmx/environment' \
+          'TimeoutStartSec=10min' > /steam-dropins/60-xess-xmx.conf
+        echo "steam drop-in: xess-xmx"
     volumes:
       - ${UMBREL_ROOT}/data/storage/downloads/steam:/games
       # Sunshine drop-in, mounted read-only by the desktop
       - ${APP_DATA_DIR}/data/sunshine.service.d:/dropins
+      # Steam drop-in, mounted read-only by the desktop
+      - ${APP_DATA_DIR}/data/steam.service.d:/steam-dropins
+      - ${APP_DATA_DIR}/data/home/.xess-xmx:/xess
 
   # Home screen icon: a page on 127.0.0.1:30112 that sends the browser to
   # SHUI on the host name it used (umbrel, umbrel.local, LAN or Tailscale
@@ -125,6 +141,28 @@ services:
       - ${APP_DATA_DIR}/data/orbit:/out
       - ${APP_DATA_DIR}/data/sunshine.service.d:/dropins
 
+  # One-shot, after setup and before the desktop: XeSS super resolution and
+  # frame generation on the XMX units of Intel Arc GPUs in Proton games
+  # (github.com/HHHHanasak1/xess-xmx-linux; image built in this repository,
+  # .github/xess-xmx). Copies the package into home/.xess-xmx (a new
+  # release over the old one), fetches Intel's compiler and XeSS SDK and
+  # AMD's FidelityFX files once, and stages activate.sh, which Steam's
+  # drop-in runs before Steam. On a GPU without XMX units (N100) activate.sh
+  # changes nothing. To turn it off, create home/.xess-xmx/DISABLED.
+  xess-xmx:
+    image: ghcr.io/kic2807/xess-xmx:2026.1119.0-r2@sha256:296923a1706728d756dbbfcf914f14e4b06124cb22bdd07ea53e9b61f33477d8
+    restart: "no"
+    user: "1000:1000"
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      setup:
+        condition: service_completed_successfully
+    volumes:
+      - ${APP_DATA_DIR}/data/home/.xess-xmx:/out
+
   desktop:
     image: josh5/steam-headless:2.44.20261019.1@sha256:c60f4d7243a4d94515f722441fff90b752413bf6a45bb221c9a4ed55bc4d9108
     restart: on-failure
@@ -133,6 +171,8 @@ services:
       setup:
         condition: service_completed_successfully
       orbit-agent:
+        condition: service_completed_successfully
+      xess-xmx:
         condition: service_completed_successfully
 
     # Upstream's capabilities and security options (systemd in an
@@ -212,6 +252,9 @@ services:
       # a game holds the GPU at 100%. This drop-in (written by setup) passes
       # SYS_NICE, already in cap_add, to Sunshine only.
       - ${APP_DATA_DIR}/data/sunshine.service.d:/etc/systemd/system/steam-headless-sunshine.service.d:ro
+      # Steam's XeSS XMX drop-in (written by setup): activate.sh before
+      # Steam, then its environment for Steam and every game
+      - ${APP_DATA_DIR}/data/steam.service.d:/etc/systemd/system/steam-headless-steam.service.d:ro
       # Orbit agent, written by orbit-agent before every start
       - ${APP_DATA_DIR}/data/orbit/orbit-agent:/usr/local/bin/orbit-agent:ro
       - ${APP_DATA_DIR}/data/orbit/orbit-agent.service:/etc/systemd/system/orbit-agent.service:ro
