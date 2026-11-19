@@ -29,6 +29,13 @@ RUN test -n "$ORCA_VERSION" && test -n "$ORCA_SHA256" \
  && grep -qx "orca ${ORCA_VERSION}" /opt/orca/VERSION \
  && ln -s /opt/orca/bin/orca-ide /usr/local/bin/orca
 
+# Login shells (`bash -l`, and terminals that start one) get their PATH from
+# /etc/profile, which drops ~/.local/bin, and the home in app data has no
+# ~/.profile to add it back: agents installed there (claude, codex) would not
+# be found.
+RUN printf '%s\n' 'case ":$PATH:" in *":$HOME/.local/bin:"*) ;; *) PATH="$HOME/.local/bin:$PATH" ;; esac' \
+      'export PATH' > /etc/profile.d/orca-local-bin.sh
+
 # Same UID/GID as the umbrel user, so app-data stays owned by it.
 RUN groupadd -g 1000 orca \
  && useradd -u 1000 -g 1000 -m -d /home/orca -s /bin/bash orca

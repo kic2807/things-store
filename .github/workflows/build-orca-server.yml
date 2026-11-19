@@ -110,6 +110,9 @@ jobs:
           for t in git gh node npm python3 ssh rg make; do
             docker exec orca sh -c "command -v $t"
           done
+          # agents installed into ~/.local/bin are found in login shells too
+          docker exec orca bash -lc 'echo "$PATH"' | tee /tmp/path
+          grep -q '/home/orca/.local/bin' /tmp/path
 
       - uses: docker/login-action@v3
         if: steps.v.outputs.build == 'true'
