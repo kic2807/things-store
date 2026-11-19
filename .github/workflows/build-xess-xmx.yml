@@ -102,11 +102,20 @@ jobs:
 
       - name: Check staging as the app runs it
         if: steps.v.outputs.build == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # As steamheadless (1000) with no capabilities, like the app.
-          mkdir -p /tmp/out && sudo chown 1000:1000 /tmp/out
+          # The package's get-igc.sh asks GitHub's API anonymously, which
+          # shared runner addresses run out of; stage.sh sets HOME=/tmp, so
+          # this test-only .curlrc lends it the job token (curl keeps a custom
+          # Authorization header to the host it was given for).
+          mkdir -p /tmp/out /tmp/home && sudo chown 1000:1000 /tmp/out
+          printf 'header = "Authorization: Bearer %s"\n' "$GH_TOKEN" > /tmp/home/.curlrc
+          chmod 644 /tmp/home/.curlrc
           run() { docker run --rm --user 1000:1000 --cap-drop all \
-            --security-opt no-new-privileges:true -v /tmp/out:/out xess-xmx:test; }
+            --security-opt no-new-privileges:true -v /tmp/out:/out \
+            -v /tmp/home/.curlrc:/tmp/.curlrc:ro xess-xmx:test; }
           bash -n .github/xess-xmx/activate.sh
           run | tee /tmp/log1
           grep -q "release ${{ steps.v.outputs.release }} staged" /tmp/log1
