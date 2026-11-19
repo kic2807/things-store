@@ -30,7 +30,6 @@ The apps show up under **Haus Things App Store**.
 | [things-band-backup](things-band-backup/README.md) | 2.5.0 | — (30103 placeholder) | BAND → Immich backup and schedule-photo → calendar bot. No web UI. | `.env` |
 | [things-immich-ml](things-immich-ml/README.md) | 3.3.4 | — (30109 placeholder) | Immich machine learning on the Intel GPU (OpenVINO), for the official Immich app. No web UI. | Immich ML URL setting |
 | [things-cleanuparr](things-cleanuparr/README.md) | 2.10.12 | 30110 | Removes stalled and failed downloads from the Sonarr/Radarr queues, blocklists them and searches again (Transmission). | web setup |
-| [things-subsy-cost](things-subsy-cost/README.md) | 1.0.0 | — (30111 placeholder) | Subsy Cost API for the iOS app: Superset → SQLite on a schedule, served through Cloudflare Tunnel + Access. No web UI. | `.env` |
 | [things-steam-headless](things-steam-headless/README.md) | 2.44-14 | 8483 HTTPS, direct (30112 forwards there) | Steam desktop (KDE, Proton, Sunshine) streamed to a browser, Moonlight or Steam Remote Play, plus the Orbit agent (47800). Host network, needs a GPU with video encoding and 16 GB+ RAM. Most privileged app here. | web setup |
 | [things-orca-server](things-orca-server/README.md) | 1.4.258 | 6768 WebSocket, direct (30113 placeholder) | Orca's headless server: repos, worktrees and coding agents (Claude Code, Codex) run here; the Orca desktop app and Orca Mobile connect as clients. No web UI. | `orca pair` + agent logins |
 
@@ -44,7 +43,7 @@ App data lives in `~/umbrel/app-data/<app-id>/data/` on the Umbrel server
 (Settings → Advanced settings → Terminal → umbrelOS, or SSH). Docker commands
 there need `sudo`.
 
-### `.env` apps (cloudflare-ddns, caddy, gitea-act-runner, transmission-vpn, stump, band-backup, subsy-cost)
+### `.env` apps (cloudflare-ddns, caddy, gitea-act-runner, transmission-vpn, stump, band-backup)
 
 `docker-compose.yml` loads `${APP_DATA_DIR}/data/.env` with
 `env_file: required: false`, so the app installs without it and picks it up on
@@ -120,7 +119,6 @@ needed, just **Merge**). A change needs review when:
 | ghcr.io/immich-app/immich-machine-learning (`-openvino`) | immich-app/immich releases | every update (match Umbrel's Immich) | — |
 | ghcr.io/cleanuparr/cleanuparr | GitHub releases | major, minor (minor releases can be breaking) | patch |
 | ghcr.io/kic2807/caddy-cloudflare | caddyserver/caddy releases | major | patch, plugin-only rebuild |
-| cloudflare/cloudflared (things-subsy-cost) | cloudflare/cloudflared releases | major (new year) | minor, patch |
 | josh5/steam-headless | none (no V2 releases on GitHub) | every update | — |
 
 ### caddy-cloudflare image
@@ -140,8 +138,8 @@ wait for review.
 Rebuild by hand: Actions → Build caddy-cloudflare → Run workflow (optionally
 pin versions; tick *force* to overwrite an existing tag).
 
-`things-band-backup` and `ghcr.io/kic2807/subsy-cost-server` (things-subsy-cost) are
-not part of this: they are released by hand from their own repos (see their READMEs).
+`things-band-backup` is not part of this: it is released by hand from its own
+repo (see its README).
 
 Merged updates only make the update button appear in Umbrel; nothing is
 installed until you press it. Run `python3 .github/scripts/update_images.py`
