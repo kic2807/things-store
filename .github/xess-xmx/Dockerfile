@@ -6,15 +6,18 @@
 # and the SHA-256 GitHub lists for its zip.
 #
 # Intel's compiler and XeSS SDK and AMD's FidelityFX files are not baked in
-# (their licenses are their own): the package's install.sh downloads them once
-# on the Umbrel, each checked against a SHA-256 pinned in the package.
+# (their licenses are their own): stage.sh fetches them on the Umbrel with the
+# package's own scripts, each checked against a SHA-256 pinned in the package,
+# so Steam's start never waits for them. Those scripts need bash, curl, ar
+# (binutils), tar with xz/zstd, unzip and python3.
 FROM debian:trixie-slim
 
 ARG XESS_XMX_RELEASE
 ARG XESS_XMX_SHA256
 
 RUN apt-get update \
- && apt-get install -y --no-install-recommends ca-certificates curl unzip \
+ && apt-get install -y --no-install-recommends \
+      bash binutils ca-certificates curl python3 unzip xz-utils zstd \
  && rm -rf /var/lib/apt/lists/*
 
 RUN test -n "$XESS_XMX_RELEASE" && test -n "$XESS_XMX_SHA256" \
@@ -28,4 +31,5 @@ RUN test -n "$XESS_XMX_RELEASE" && test -n "$XESS_XMX_SHA256" \
  && echo "${XESS_XMX_RELEASE}" > /pkg/.release
 
 COPY stage.sh /stage.sh
+COPY activate.sh /things/activate.sh
 CMD ["/bin/sh", "/stage.sh"]

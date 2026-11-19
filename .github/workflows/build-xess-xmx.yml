@@ -107,12 +107,22 @@ jobs:
           mkdir -p /tmp/out && sudo chown 1000:1000 /tmp/out
           run() { docker run --rm --user 1000:1000 --cap-drop all \
             --security-opt no-new-privileges:true -v /tmp/out:/out xess-xmx:test; }
+          bash -n .github/xess-xmx/activate.sh
           run | tee /tmp/log1
           grep -q "release ${{ steps.v.outputs.release }} staged" /tmp/log1
           test -x /tmp/out/install.sh
-          sudo mkdir /tmp/out/igc && sudo touch /tmp/out/igc/keep
+          test -f /tmp/out/.things/activate.sh
+          # the bundles install.sh would otherwise fetch at Steam's start
+          ls /tmp/out/igc/neo/bin/ocloc*
+          test -f /tmp/out/xess/libxess.dll
+          test -f /tmp/out/ffx/amd_fidelityfx_loader_dx12.dll
+          test -f /tmp/out/ffx/amd_fidelityfx_framegeneration_dx12.dll
+          if grep -q "download failed" /tmp/log1; then exit 1; fi
+          # second start: nothing copied or fetched again, files kept
+          touch /tmp/out/igc/keep 2>/dev/null || sudo touch /tmp/out/igc/keep
           run | tee /tmp/log2
           grep -q "already staged" /tmp/log2
+          if grep -q "fetching" /tmp/log2; then exit 1; fi
           test -e /tmp/out/igc/keep
 
       - uses: docker/login-action@v3
