@@ -56,7 +56,9 @@ C=things-orca-server_server_1
 5. **Git:** `gh auth login` (then `gh auth setup-git`), or an SSH key in
    `~/.ssh`. Set `git config --global user.name/user.email`; for
    kic2807 repos use the GitHub noreply address.
-6. Clone repositories (e.g. into `~/projects`) and open them in Orca on the
+6. Clone repositories into `~/projects`, or copy project folders into
+   **Downloads/orca-projects** with the Umbrel Files app (or over SMB): that
+   folder is `~/projects` on the server. Open them in Orca on the
    server.
 
 ## Storage
@@ -64,9 +66,11 @@ C=things-orca-server_server_1
 | Host | Container | What |
 |------|-----------|------|
 | `app-data/things-orca-server/data/home` | `/home/orca` | everything: Orca's profile (`~/.config/orca`: pairing identity, sessions, stored credentials), agent logins (`~/.claude`, `~/.codex`), `~/.local` tools, git/gh/ssh config, cloned repos |
+| `data/storage/downloads/orca-projects` | `/home/orca/projects` | shared projects: Downloads/orca-projects in the Files app; kept on uninstall |
 | `/etc/machine-id` (read-only) | `/etc/machine-id` | Orca seals stored credentials with a key mixed with the machine ID; the host's stays the same across image updates |
 
-Uninstalling deletes all of it, including uncommitted work in worktrees.
+Uninstalling deletes the app-data folder, including uncommitted work in
+worktrees outside `~/projects`; Downloads/orca-projects stays.
 Orca's credential key sits next to the credentials in the same folder, so
 anyone who can read `app-data` (or a backup of it) can read them.
 
@@ -96,6 +100,10 @@ sudo docker exec $C orca status               # runtimeState: ready
 - *`linger off` / `daemon-scope-unavailable`* in the log: expected in a
   container; terminals still survive a server restart inside it, not a
   container restart.
+- *Pairing link in the startup log*: it points at 127.0.0.1 and no client
+  can use it; make one with `orca pair --address <umbrel-ip>`.
+- *`orca pair` says pairing is disabled (`disabled_by_operator`)*: the
+  server was started with `--no-pairing` (before 1.4.263-1); update the app.
 - *Pairing link does not connect*: the address given to `--address` must be
   reachable from the client (LAN IP at home, Tailscale IP elsewhere), port
   6768.

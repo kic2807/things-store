@@ -43,6 +43,7 @@ ENV HOME=/home/orca \
 
 EXPOSE 6768
 # Listen on every interface of the container (the published port decides
-# what reaches it); no pairing link in the logs: pair with `orca pair`.
+# what reaches it). Pairing stays on: --no-pairing also makes `orca pair`
+# refuse. Pair with `orca pair --address <host>` (the startup link says 127.0.0.1).
 # --supervise restarts the server in-process and keeps terminals alive.
-CMD ["orca", "serve", "--port", "6768", "--bind", "0.0.0.0", "--no-pairing", "--supervise"]
+CMD ["orca", "serve", "--port", "6768", "--bind", "0.0.0.0", "--supervise"]

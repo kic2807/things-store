@@ -10,6 +10,22 @@ version: "3.7"
 # LAN/Tailscale only: do not port-forward 6768.
 
 services:
+  # Creates Downloads/orca-projects owned by the umbrel user (Docker would
+  # create a missing folder as root, which the server could not write to).
+  setup:
+    image: ghcr.io/kic2807/orca-server:1.4.263-r1@sha256:8015a6916da3f74855216bd1e037996be36328d37fe20128a1e86d1a34f8ea2b
+    restart: "no"
+    user: "0:0"
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+    security_opt:
+      - no-new-privileges:true
+    entrypoint: ["chown", "1000:1000", "/projects"]
+    volumes:
+      - ${UMBREL_ROOT}/data/storage/downloads/orca-projects:/projects
+
   server:
     # Built in this repo from the official release bundle
     # (.github/workflows/build-orca-server.yml).
@@ -23,6 +39,14 @@ services:
     security_opt:
       - no-new-privileges:true
     stop_grace_period: 30s
+    depends_on:
+      setup:
+        condition: service_completed_successfully
+    # Pairing must stay on: --no-pairing also makes `orca pair` refuse
+    # ("disabled_by_operator"). The startup log then shows a pairing link for
+    # 127.0.0.1, which no client can use; make one with
+    # `orca pair --address <umbrel-ip>` (README).
+    command: ["orca", "serve", "--port", "6768", "--bind", "0.0.0.0", "--supervise"]
     ports:
       - "6768:6768"
     environment:
@@ -32,6 +56,9 @@ services:
       # (~/.claude, ~/.codex), git/gh/ssh config, ~/.local tools and the
       # repos you clone (e.g. ~/projects).
       - ${APP_DATA_DIR}/data/home:/home/orca
+      # Shared projects: Downloads/orca-projects in the Umbrel Files app (and
+      # over SMB), ~/projects on the server. Kept when the app is uninstalled.
+      - ${UMBREL_ROOT}/data/storage/downloads/orca-projects:/home/orca/projects
       # Orca seals stored credentials with a key mixed with the machine ID;
       # the host's keeps them readable across image updates.
       - /etc/machine-id:/etc/machine-id:ro
