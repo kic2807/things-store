@@ -11,7 +11,7 @@ folderAccess:
         targetPath: /projects
 category: developer
 name: Orca Server
-version: "1.4.266"
+version: "1.4.266-1"
 tagline: Run Orca's coding agents and worktrees on this server
 icon: https://raw.githubusercontent.com/kic2807/things-store/main/things-orca-server/icon.svg
 description: >-
@@ -20,7 +20,7 @@ description: >-
 
   No web UI: the home screen icon does nothing (its port, 30113, is only a placeholder). The server listens on port 6768. Pair a client by running `orca pair` in the container, install and sign in to the agent CLIs once, and clone your repositories. LAN and Tailscale only. See the README in the store repository.
 releaseNotes: >-
-  Orca 1.4.266. New optional tailcat service: reach the server from anywhere without the Tailscale app on your Mac (off until you allow your Mac's key; see the README).
+  Updated images: ghcr.io/kic2807/orca-server 1.4.266-r3 -> 1.4.266-r4.
 
 developer: Stably AI
 website: https://orca.dev
