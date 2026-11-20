@@ -119,6 +119,21 @@ jobs:
           docker logs tc 2>&1 | tee /tmp/tc
           grep -q 'orca-tailcat: off' /tmp/tc
           docker rm -f tc
+          # with a client key allowed, it serves 6768 from the server's
+          # namespace (as in the app: network_mode service:server) and keeps
+          # running
+          key=$(docker run --rm -e HOME=/tmp orca-server:test sh -c \
+            'tailcat genkey --client --key=c >/dev/null 2>&1; python3 -c "import json; print(json.load(open(\"/tmp/.config/tailcat/keys/c.private.json\"))[\"Public\"][\"ServerPublic\"])"')
+          echo "client key: $key"
+          docker run -d --name tc --network container:orca --cap-drop all \
+            -e HOME=/tmp -e TAILCAT_ALLOW="$key" orca-server:test orca-tailcat
+          sleep 15
+          docker logs tc 2>&1 | tee /tmp/tc
+          grep -q 'orca-tailcat: serving 6768' /tmp/tc
+          if grep -qiE 'invalid|genkey failed' /tmp/tc; then exit 1; fi
+          test "$(docker inspect -f '{{.State.Running}}' tc)" = true
+          docker exec tc cat /tmp/address
+          docker rm -f tc
 
       - uses: docker/login-action@v3
         if: steps.v.outputs.build == 'true'

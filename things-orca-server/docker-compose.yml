@@ -141,6 +141,9 @@ services:
     # Tailscale". Serves only the server's port 6768, to the client keys in
     # TAILCAT_ALLOW (set for this service in the app's settings, Environment
     # variables). No published ports: the tunnel dials out.
+    # tailcat forwards ports to its own localhost only, so it shares the
+    # server's network namespace (compose recreates it with the server).
+    network_mode: "service:server"
     image: ghcr.io/kic2807/orca-server:1.4.266-r3@sha256:43e5fe25614eb7a52932c719590f051756a6b1d059df7c68cefef07fbca34084
     restart: on-failure
     init: true
@@ -150,8 +153,8 @@ services:
     security_opt:
       - no-new-privileges:true
     depends_on:
-      setup:
-        condition: service_completed_successfully
+      server:
+        condition: service_started
     command: ["orca-tailcat"]
     environment:
       HOME: /tailcat
