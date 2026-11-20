@@ -29,6 +29,20 @@ RUN test -n "$ORCA_VERSION" && test -n "$ORCA_SHA256" \
  && grep -qx "orca ${ORCA_VERSION}" /opt/orca/VERSION \
  && ln -s /opt/orca/bin/orca-ide /usr/local/bin/orca
 
+# tailcat (tailscale/tailcat), for the app's `tailcat` service: reaches the
+# server through a tunnel without Tailscale on the client
+# (/usr/local/bin/orca-tailcat). Pinned by hand: bump the version and the
+# SHA-256 of tailcat_<v>_linux_amd64.tar.gz from the release's checksums.txt.
+ARG TAILCAT_VERSION=0.7.0
+ARG TAILCAT_SHA256=23c0b1887a5ec422f0d18a9c52b4f5357815febdaae738a1eb54036d10bd9ee6
+RUN curl -fsSL -o /tmp/tailcat.tgz \
+      "https://github.com/tailscale/tailcat/releases/download/v${TAILCAT_VERSION}/tailcat_${TAILCAT_VERSION}_linux_amd64.tar.gz" \
+ && echo "${TAILCAT_SHA256}  /tmp/tailcat.tgz" | sha256sum -c - \
+ && tar xzf /tmp/tailcat.tgz -C /usr/local/bin tailcat \
+ && rm /tmp/tailcat.tgz \
+ && tailcat --version | grep -qx "v${TAILCAT_VERSION}"
+COPY orca-tailcat /usr/local/bin/orca-tailcat
+
 # Login shells (`bash -l`, and terminals that start one) get their PATH from
 # /etc/profile, which drops ~/.local/bin, and the home in app data has no
 # ~/.profile to add it back: agents installed there (claude, codex) would not
