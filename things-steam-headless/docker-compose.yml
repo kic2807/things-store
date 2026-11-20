@@ -150,7 +150,7 @@ services:
   # drop-in runs before Steam. On a GPU without XMX units (N100) activate.sh
   # changes nothing. To turn it off, create home/.xess-xmx/DISABLED.
   xess-xmx:
-    image: ghcr.io/kic2807/xess-xmx:2026.1119.0-r2@sha256:296923a1706728d756dbbfcf914f14e4b06124cb22bdd07ea53e9b61f33477d8
+    image: ghcr.io/kic2807/xess-xmx:2026.1120.0-r2@sha256:a1ba077d2297a8ad13677a8c54192b2b48a6ce0f7a724ed7aaa0333227dccacd
     restart: "no"
     user: "1000:1000"
     cap_drop:
