@@ -1,0 +1,59 @@
+#!/bin/bash
+# orca-tailcat - the `tailcat` service of things-orca-server: reaches Orca's
+# port 6768 from anywhere through a tailcat tunnel (Tailscale's data plane,
+# no Tailscale account), without the Tailscale app on the client.
+#
+#   TAILCAT_ALLOW   comma-separated client node keys (`tailcat genkey --client`
+#                   on the Mac prints one); unset = the service stays off
+#   TAILCAT_TARGET  host:port to serve (default things-orca-server_server_1:6768)
+#
+# The server key is saved under $HOME (app data), so the tailcat address
+# stays the same across restarts; it is printed in the log and written to
+# $HOME/address. Only the allowed keys can connect; Orca's pairing token is
+# still needed on top.
+#
+# tailcat's port mapping takes an IP, and the server container's IP changes
+# when it is recreated: the name is resolved here and tailcat restarts
+# (same address) when it changes.
+set -u
+log() { echo "orca-tailcat: $*"; }
+child=""
+stop() { [ -n "$child" ] && kill -TERM "$child" 2>/dev/null; wait; exit 0; }
+trap stop TERM INT
+
+if [ -z "${TAILCAT_ALLOW:-}" ]; then
+  log "off: set TAILCAT_ALLOW (the Mac's client key) for this service to turn it on"
+  while true; do sleep 3600 & child=$!; wait $child; done
+fi
+
+target="${TAILCAT_TARGET:-things-orca-server_server_1:6768}"
+host="${target%:*}"
+port="${target##*:}"
+resolve() { getent ahostsv4 "$host" | awk 'NR==1 {print $1}'; }
+
+if [ ! -f "$HOME/.config/tailcat/keys/default.private.json" ]; then
+  log "creating the server key (the tailcat address)"
+  tailcat genkey --key=default --fixed-region || { log "genkey failed"; exit 1; }
+fi
+
+export TAILCAT_ADDR_FILE="$HOME/address"
+while true; do
+  ip=$(resolve)
+  if [ -z "$ip" ]; then
+    log "waiting for $host"; sleep 5 & child=$!; wait $child; continue
+  fi
+  log "serving $port -> $host ($ip):$port"
+  tailcat serve --allow="$TAILCAT_ALLOW" "$port:$ip:$port" &
+  child=$!
+  while kill -0 "$child" 2>/dev/null; do
+    sleep 15 & wait $!
+    now=$(resolve)
+    if [ -n "$now" ] && [ "$now" != "$ip" ]; then
+      log "$host moved to $now: restarting"
+      kill -TERM "$child" 2>/dev/null
+    fi
+  done
+  wait "$child"
+  child=""
+  sleep 3
+done
