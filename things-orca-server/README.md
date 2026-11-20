@@ -9,6 +9,7 @@ connect too.
 | Service | Image | What |
 |---------|-------|------|
 | `server` | `ghcr.io/kic2807/orca-server` | `orca serve` on port 6768 |
+| `tailscale` | `tailscale/tailscale` | optional proxy through a Tailscale exit node, for git hosts that only accept one network; off by default |
 
 The image is built in this repository
 ([`.github/orca-server`](../.github/orca-server/Dockerfile)): Orca's official
@@ -62,12 +63,62 @@ C=things-orca-server_server_1
    settings under Storage). Open them in Orca on the
    server.
 
+## Git hosts behind an exit node
+
+Some git hosts only accept connections from one network, for example a work
+GitLab that allows only the office IP. If a Tailscale exit node sits in that
+network, the `tailscale` service gives git a proxy that leaves through it.
+Only the hosts you configure use it; the Umbrel and the server's other
+traffic (agents' APIs, GitHub, npm) stay direct.
+
+1. **Tailscale admin console:** Settings → Keys → **Generate auth key**. The
+   exit node must be approved, and your tailnet policy must let new devices
+   use it (the default policy does).
+2. **`.env`** on the Umbrel (keys from [`.env.example`](.env.example)):
+
+   ```sh
+   D=~/umbrel/app-data/things-orca-server/data
+   nano $D/.env     # TS_AUTHKEY=tskey-auth-...  EXIT_NODE=<device name>
+   chmod 600 $D/.env
+   ```
+
+   Restart the app (right-click the icon → Restart). In the admin console,
+   turn off key expiry for the new device `things-orca-server`. Check:
+
+   ```sh
+   sudo docker logs things-orca-server_tailscale_1 2>&1 | grep -E 'proxy off|exit node set'
+   sudo docker exec $C curl -s -x http://things-orca-server_tailscale_1:1055 https://ifconfig.me; echo
+   ```
+
+   Expected: `exit node set: <device>` and the exit node network's public IP.
+
+3. **Git**, in the server (`sudo docker exec -it $C bash -l`), once per
+   host:
+
+   ```sh
+   git config --global http.https://<git-host>/.proxy http://things-orca-server_tailscale_1:1055
+   ```
+
+   For git over SSH instead, in `~/.ssh/config`:
+
+   ```
+   Host <git-host>
+     ProxyCommand nc -X 5 -x things-orca-server_tailscale_1:1080 %h %p
+   ```
+
+   (needs `nc` from netcat-openbsd, not in the image; HTTPS is simpler).
+
+The exit node's own connection decides the speed; a node reached through a
+Tailscale relay (DERP) is slow for large clones.
+
 ## Storage
 
 | Host | Container | What |
 |------|-----------|------|
 | `app-data/things-orca-server/data/home` | `/home/orca` | everything: Orca's profile (`~/.config/orca`: pairing identity, sessions, stored credentials), agent logins (`~/.claude`, `~/.codex`), `~/.local` tools, git/gh/ssh config, cloned repos |
 | `home/Documents/projects` | `/home/orca/projects` | shared projects: Documents/projects in the Files app; kept on uninstall |
+| `app-data/things-orca-server/data/tailscale` | `/var/lib/tailscale` (`tailscale`) | the proxy's Tailscale node state |
+| `app-data/things-orca-server/data/.env` | (`tailscale`) | `TS_AUTHKEY`, `EXIT_NODE`; optional |
 | `/etc/machine-id` (read-only) | `/etc/machine-id` | Orca seals stored credentials with a key mixed with the machine ID; the host's stays the same across image updates |
 
 Uninstalling deletes the app-data folder, including uncommitted work in
@@ -124,3 +175,4 @@ to the desktop app's version; both update often.
 - [ ] Clone a repo with `gh`, create a worktree and run an agent from the Mac
 - [ ] Connect over Tailscale away from home
 - [ ] Stored credentials still readable after an app update
+- [ ] Exit-node proxy: `exit node set`, a fetch from a host behind it works; without `.env` the log says `proxy off`
