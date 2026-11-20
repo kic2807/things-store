@@ -181,6 +181,10 @@ Notes:
   transfers. tailcat can use your own relay (`derper`) instead.
 - To stop on the Mac: `launchctl bootout gui/$(id -u)/things.orca-tailcat`.
   On the Umbrel: remove `TAILCAT_ALLOW`.
+- The service shares the server container's network (tailcat forwards
+  ports to its own localhost only). `TAILCAT_ALLOW` must contain at least one
+  `nodekey:…`: tailcat with an empty allow list would accept every client,
+  so the service stays off instead.
 - tailcat's version is pinned in the image (`.github/orca-server/Dockerfile`)
   and updated by hand.
 
