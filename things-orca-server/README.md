@@ -9,6 +9,7 @@ connect too.
 | Service | Image | What |
 |---------|-------|------|
 | `server` | `ghcr.io/kic2807/orca-server` | `orca serve` on port 6768 |
+| `tailcat` | `ghcr.io/kic2807/orca-server` | optional tunnel to port 6768 without Tailscale on the client ([tailcat](https://github.com/tailscale/tailcat)); off by default |
 | `tailscale` | `tailscale/tailscale` | optional proxy through a Tailscale exit node, for git hosts that only accept one network; off by default |
 
 The image is built in this repository
@@ -111,6 +112,78 @@ traffic (agents' APIs, GitHub, npm) stay direct.
 The exit node's own connection decides the speed; a node reached through a
 Tailscale relay (DERP) is slow for large clones.
 
+## Access without Tailscale (tailcat)
+
+[tailcat](https://github.com/tailscale/tailcat) is Tailscale's open-source
+netcat-style tool: WireGuard tunnels with NAT traversal, bootstrapped
+through Tailscale's free tailcat relays, with no Tailscale account or
+tailnet. The `tailcat` service serves only Orca's port 6768 to the client
+keys you allow; the Mac runs `tailcat forward`, and Orca connects to
+`127.0.0.1`. It works from any network and leaves the Mac's Tailscale app
+(if any) free for other tailnets.
+
+1. **Mac**: install tailcat and create its client key, which prints a
+   `nodekey:…` line:
+
+   ```sh
+   brew install tailcat
+   tailcat genkey --client --key=client-default
+   ```
+
+2. **Umbrel**: the app's settings → **Environment variables** → service
+   **tailcat** → `TAILCAT_ALLOW` = that `nodekey:…` (several keys:
+   comma-separated). The app restarts. Read the server's address:
+
+   ```sh
+   cat ~/umbrel/app-data/things-orca-server/data/tailcat/address; echo
+   ```
+
+3. **Mac**: keep the forward running as a login item (LaunchAgent), with
+   the address from step 2:
+
+   ```sh
+   A=tc...   # the address
+   L=~/Library/LaunchAgents/things.orca-tailcat.plist
+   cat > $L <<PLIST
+   <?xml version="1.0" encoding="UTF-8"?>
+   <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+   <plist version="1.0"><dict>
+     <key>Label</key><string>things.orca-tailcat</string>
+     <key>ProgramArguments</key><array>
+       <string>$(brew --prefix)/bin/tailcat</string><string>forward</string>
+       <string>$A</string><string>16768:6768</string>
+     </array>
+     <key>RunAtLoad</key><true/>
+     <key>KeepAlive</key><true/>
+     <key>StandardErrorPath</key><string>/tmp/orca-tailcat.log</string>
+   </dict></plist>
+   PLIST
+   launchctl bootstrap gui/$(id -u) $L
+   tailcat ping --until-direct $A   # "via <ip>:<port>" = direct, "via DERP(...)" = relayed
+   ```
+
+4. **Pair** with the local end of the tunnel, and add the link in Orca
+   (Settings → Remote Orca Servers → Add Server):
+
+   ```sh
+   sudo docker exec $C orca pair --rotate --address 127.0.0.1:16768
+   ```
+
+Notes:
+
+- The address and the key file (`data/tailcat/.config/tailcat/keys`)
+  identify the server; only allowed client keys get through, and Orca's
+  pairing token is still needed. To change the address, delete
+  `data/tailcat/.config` and restart the app (then update the LaunchAgent).
+- Most connections go direct after the start. On networks that block that,
+  traffic stays on Tailscale's shared relays: rate-limited (no published
+  figure), logged as metadata, fine for terminals and agents, slow for bulk
+  transfers. tailcat can use your own relay (`derper`) instead.
+- To stop on the Mac: `launchctl bootout gui/$(id -u)/things.orca-tailcat`.
+  On the Umbrel: remove `TAILCAT_ALLOW`.
+- tailcat's version is pinned in the image (`.github/orca-server/Dockerfile`)
+  and updated by hand.
+
 ## Storage
 
 | Host | Container | What |
@@ -119,6 +192,7 @@ Tailscale relay (DERP) is slow for large clones.
 | `home/Documents/projects` | `/home/orca/projects` | shared projects: Documents/projects in the Files app; kept on uninstall |
 | `app-data/things-orca-server/data/tailscale` | `/var/lib/tailscale` (`tailscale`) | the proxy's Tailscale node state |
 | `app-data/things-orca-server/data/.env` | (`tailscale`) | `TS_AUTHKEY`, `EXIT_NODE`; optional |
+| `app-data/things-orca-server/data/tailcat` | `/tailcat` (`tailcat`) | tailcat server key (the address stays the same) and `address` |
 | `/etc/machine-id` (read-only) | `/etc/machine-id` | Orca seals stored credentials with a key mixed with the machine ID; the host's stays the same across image updates |
 
 Uninstalling deletes the app-data folder, including uncommitted work in
@@ -175,4 +249,5 @@ to the desktop app's version; both update often.
 - [ ] Clone a repo with `gh`, create a worktree and run an agent from the Mac
 - [ ] Connect over Tailscale away from home
 - [ ] Stored credentials still readable after an app update
+- [ ] tailcat: `orca-tailcat: off` without `TAILCAT_ALLOW`; with it, the Mac's forward connects (`tailcat ping`), Orca pairs over `127.0.0.1:16768`, a key not in the list is refused
 - [ ] Exit-node proxy: `exit node set`, a fetch from a host behind it works; without `.env` the log says `proxy off`

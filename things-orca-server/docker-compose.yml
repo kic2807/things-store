@@ -14,12 +14,17 @@ version: "3.7"
 # network (e.g. a work GitLab behind an office IP allowlist). Off until
 # data/.env has TS_AUTHKEY; git uses it only for the hosts configured with
 # `http.<url>.proxy` (README). The server's own traffic stays direct.
+#
+# Optional `tailcat` service: reach the server from anywhere without the
+# Tailscale app on the client, through a tailcat tunnel (Tailscale's data
+# plane, no account). Off until TAILCAT_ALLOW lists the client's key.
 
 services:
-  # Creates Documents/projects owned by the umbrel user (Docker would
-  # create a missing folder as root, which the server could not write to).
+  # Creates Documents/projects and the tailcat state folder owned by the
+  # umbrel user (Docker would create a missing folder as root, which the
+  # services could not write to).
   setup:
-    image: ghcr.io/kic2807/orca-server:1.4.265-r2@sha256:0b01093aafece46620cd4e605a9f9ce32d1a92fdd1c8336c38b6358c8fb298c7
+    image: ghcr.io/kic2807/orca-server:1.4.266-r3@sha256:43e5fe25614eb7a52932c719590f051756a6b1d059df7c68cefef07fbca34084
     restart: "no"
     user: "0:0"
     cap_drop:
@@ -28,14 +33,15 @@ services:
       - CHOWN
     security_opt:
       - no-new-privileges:true
-    entrypoint: ["chown", "1000:1000", "/projects"]
+    entrypoint: ["chown", "1000:1000", "/projects", "/tailcat"]
     volumes:
       - ${UMBREL_ROOT}/home/Documents/projects:/projects
+      - ${APP_DATA_DIR}/data/tailcat:/tailcat
 
   server:
     # Built in this repo from the official release bundle
     # (.github/workflows/build-orca-server.yml).
-    image: ghcr.io/kic2807/orca-server:1.4.265-r2@sha256:0b01093aafece46620cd4e605a9f9ce32d1a92fdd1c8336c38b6358c8fb298c7
+    image: ghcr.io/kic2807/orca-server:1.4.266-r3@sha256:43e5fe25614eb7a52932c719590f051756a6b1d059df7c68cefef07fbca34084
     restart: on-failure
     init: true
     # The agents run as the umbrel user (1000) with no capabilities: no sudo,
@@ -129,3 +135,26 @@ services:
           echo "EXIT_NODE is not set in data/.env: the proxy leaves directly"
         fi
         wait $$boot
+
+  tailcat:
+    # Same image (tailcat and orca-tailcat are in it); README "Access without
+    # Tailscale". Serves only the server's port 6768, to the client keys in
+    # TAILCAT_ALLOW (set for this service in the app's settings, Environment
+    # variables). No published ports: the tunnel dials out.
+    image: ghcr.io/kic2807/orca-server:1.4.266-r3@sha256:43e5fe25614eb7a52932c719590f051756a6b1d059df7c68cefef07fbca34084
+    restart: on-failure
+    init: true
+    user: "1000:1000"
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      setup:
+        condition: service_completed_successfully
+    command: ["orca-tailcat"]
+    environment:
+      HOME: /tailcat
+    volumes:
+      # The server key (the tailcat address stays the same) and `address`.
+      - ${APP_DATA_DIR}/data/tailcat:/tailcat
