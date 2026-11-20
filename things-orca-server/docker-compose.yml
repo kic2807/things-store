@@ -8,6 +8,12 @@ version: "3.7"
 # umbrelOS would put its own HTTPS proxy on the manifest port, so that is a
 # placeholder (30113). Access needs a pairing token (`orca pair`, see README).
 # LAN/Tailscale only: do not port-forward 6768.
+#
+# Optional `tailscale` service: an HTTP/SOCKS5 proxy that leaves through a
+# Tailscale exit node, for git hosts that only accept connections from one
+# network (e.g. a work GitLab behind an office IP allowlist). Off until
+# data/.env has TS_AUTHKEY; git uses it only for the hosts configured with
+# `http.<url>.proxy` (README). The server's own traffic stays direct.
 
 services:
   # Creates Documents/projects owned by the umbrel user (Docker would
@@ -62,3 +68,64 @@ services:
       # Orca seals stored credentials with a key mixed with the machine ID;
       # the host's keeps them readable across image updates.
       - /etc/machine-id:/etc/machine-id:ro
+
+  tailscale:
+    image: tailscale/tailscale:v1.104.7@sha256:72c1e19e0aedca96b8533bbb0b4368564410ff20b17e53b804eb6c1f04a31be4
+    restart: on-failure
+    # Userspace networking: no tun device, no capabilities. The proxies dial
+    # out through the tailnet, so the exit node applies to them only.
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      TS_HOSTNAME: things-orca-server
+      TS_STATE_DIR: /var/lib/tailscale
+      TS_USERSPACE: "true"
+      TS_ACCEPT_DNS: "false"
+      TS_ENABLE_HEALTH_CHECK: "true"
+      TS_LOCAL_ADDR_PORT: 127.0.0.1:9002
+      # Reached from the server container as
+      # things-orca-server_tailscale_1:1055 (HTTP) or :1080 (SOCKS5); not
+      # published on the host.
+      TS_OUTBOUND_HTTP_PROXY_LISTEN: ":1055"
+      TS_SOCKS5_SERVER: ":1080"
+      # containerboot runs `tailscale up` on every start; --reset clears the
+      # exit node persisted by `tailscale set`, which the loop sets again.
+      TS_EXTRA_ARGS: --reset
+    # TS_AUTHKEY and EXIT_NODE come from the app data .env file.
+    env_file:
+      - path: ${APP_DATA_DIR}/data/.env
+        required: false
+    volumes:
+      - ${APP_DATA_DIR}/data/tailscale:/var/lib/tailscale
+    # Without TS_AUTHKEY the service only waits (the app works as before).
+    # Otherwise containerboot, then the exit node (EXIT_NODE: a Tailscale
+    # device name or IP), set once the node is up and again whenever
+    # `tailscale status` shows none.
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        if [ -z "$$TS_AUTHKEY" ]; then
+          echo "proxy off: no TS_AUTHKEY in data/.env"
+          trap 'exit 0' TERM INT
+          while true; do sleep 3600 & wait $$!; done
+        fi
+        /usr/local/bin/containerboot &
+        boot=$$!
+        trap 'kill -TERM $$boot 2>/dev/null; wait $$boot' TERM INT
+        if [ -n "$$EXIT_NODE" ]; then
+          (
+            ts() { tailscale --socket=/tmp/tailscaled.sock "$$@"; }
+            until wget -q -O /dev/null http://127.0.0.1:9002/healthz; do sleep 2; done
+            while true; do
+              if ! ts status --json 2>/dev/null | grep -q '"ExitNodeStatus"'; then
+                ts set --exit-node="$$EXIT_NODE" && echo "exit node set: $$EXIT_NODE"
+              fi
+              sleep 30
+            done
+          ) &
+        else
+          echo "EXIT_NODE is not set in data/.env: the proxy leaves directly"
+        fi
+        wait $$boot
