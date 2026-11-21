@@ -24,7 +24,7 @@ services:
   # umbrel user (Docker would create a missing folder as root, which the
   # services could not write to).
   setup:
-    image: ghcr.io/kic2807/orca-server:1.4.267-r4@sha256:2728ee903d769300803080c9b4998555caaf166052af64d05f9f3384c3eac745
+    image: ghcr.io/kic2807/orca-server:1.4.269-r4@sha256:be9448e659481b8ac65615779d031276f0e48f547c6c5a7a916aa3a19c75ce6a
     restart: "no"
     user: "0:0"
     cap_drop:
@@ -41,7 +41,7 @@ services:
   server:
     # Built in this repo from the official release bundle
     # (.github/workflows/build-orca-server.yml).
-    image: ghcr.io/kic2807/orca-server:1.4.267-r4@sha256:2728ee903d769300803080c9b4998555caaf166052af64d05f9f3384c3eac745
+    image: ghcr.io/kic2807/orca-server:1.4.269-r4@sha256:be9448e659481b8ac65615779d031276f0e48f547c6c5a7a916aa3a19c75ce6a
     restart: on-failure
     init: true
     # The agents run as the umbrel user (1000) with no capabilities: no sudo,
@@ -144,7 +144,7 @@ services:
     # tailcat forwards ports to its own localhost only, so it shares the
     # server's network namespace (compose recreates it with the server).
     network_mode: "service:server"
-    image: ghcr.io/kic2807/orca-server:1.4.267-r4@sha256:2728ee903d769300803080c9b4998555caaf166052af64d05f9f3384c3eac745
+    image: ghcr.io/kic2807/orca-server:1.4.269-r4@sha256:be9448e659481b8ac65615779d031276f0e48f547c6c5a7a916aa3a19c75ce6a
     restart: on-failure
     init: true
     user: "1000:1000"
