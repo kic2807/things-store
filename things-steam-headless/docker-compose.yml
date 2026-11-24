@@ -125,7 +125,7 @@ services:
   # keeps one Sunshine application per installed Steam game (0.2.0+).
   # Public package (built from the private repository), no login needed.
   orbit-agent:
-    image: ghcr.io/kic2807/orbit-agent:0.13.0@sha256:22573c633c7f1d5ae8f16bd72c43da53821a2cae021095864a0d3155826a2429
+    image: ghcr.io/kic2807/orbit-agent:0.13.0@sha256:ec896ab61acaa4a89330fe29c307102c8a829822d15de53bac1c59bb131dbe46
     restart: "no"
     user: "0:0"
     cap_drop:
