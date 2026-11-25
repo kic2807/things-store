@@ -5,7 +5,7 @@ version: "3.7"
 
 services:
   dind:
-    image: docker:29.10.0-dind@sha256:4bbc7223f81db790097c6dea42fb93e05b8fead4f0431fbe6ccaba6e8473201c
+    image: docker:29.10.1-dind@sha256:5d24ae532c4b32bea8fc5714ec34a7db838c9f668d18b6c772b2415196a2cd83
     # Docker-in-Docker needs privileged mode to run job containers. This is an
     # isolated daemon; the host Docker socket is never mounted.
     privileged: true
