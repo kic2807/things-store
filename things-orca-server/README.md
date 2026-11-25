@@ -139,10 +139,16 @@ keys you allow; the Mac runs `tailcat forward`, and Orca connects to
    ```
 
 3. **Mac**: keep the forward running as a login item (LaunchAgent), with
-   the address from step 2:
+   the address from step 2. [`mac/orca-tailcat-forward`](mac/orca-tailcat-forward)
+   runs `tailcat forward` and restarts it when the tunnel stops answering
+   (after a server restart, a running forward can take minutes to recover):
 
    ```sh
    A=tc...   # the address
+   mkdir -p ~/.local/bin
+   curl -fsSL -o ~/.local/bin/orca-tailcat-forward \
+     https://raw.githubusercontent.com/kic2807/things-store/main/things-orca-server/mac/orca-tailcat-forward
+   chmod +x ~/.local/bin/orca-tailcat-forward
    L=~/Library/LaunchAgents/things.orca-tailcat.plist
    cat > $L <<PLIST
    <?xml version="1.0" encoding="UTF-8"?>
@@ -150,17 +156,25 @@ keys you allow; the Mac runs `tailcat forward`, and Orca connects to
    <plist version="1.0"><dict>
      <key>Label</key><string>things.orca-tailcat</string>
      <key>ProgramArguments</key><array>
-       <string>$(brew --prefix)/bin/tailcat</string><string>forward</string>
-       <string>$A</string><string>16768:6768</string>
+       <string>/bin/bash</string><string>$HOME/.local/bin/orca-tailcat-forward</string>
+       <string>$A</string><string>16768</string><string>6768</string>
      </array>
+     <key>EnvironmentVariables</key><dict>
+       <key>TAILCAT</key><string>$(brew --prefix)/bin/tailcat</string>
+     </dict>
      <key>RunAtLoad</key><true/>
      <key>KeepAlive</key><true/>
+     <key>StandardOutPath</key><string>/tmp/orca-tailcat.log</string>
      <key>StandardErrorPath</key><string>/tmp/orca-tailcat.log</string>
    </dict></plist>
    PLIST
+   launchctl bootout gui/$(id -u)/things.orca-tailcat 2>/dev/null
    launchctl bootstrap gui/$(id -u) $L
    tailcat ping --until-direct $A   # "via <ip>:<port>" = direct, "via DERP(...)" = relayed
    ```
+
+   The same commands update an existing setup. `/tmp/orca-tailcat.log`
+   shows each start and restart.
 
 4. **Pair** with the local end of the tunnel, and add the link in Orca
    (Settings → Remote Orca Servers → Add Server):

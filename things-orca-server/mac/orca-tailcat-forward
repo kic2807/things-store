@@ -1,0 +1,47 @@
+#!/bin/bash
+# orca-tailcat-forward - the Mac end of things-orca-server's tailcat tunnel,
+# run by a LaunchAgent (README, "Access without Tailscale"):
+#
+#   orca-tailcat-forward <tailcat address> [local port, 16768] [remote port, 6768]
+#
+# Runs `tailcat forward` and restarts it when the tunnel stops answering.
+# When the server restarts (app restart or update), a running forward keeps
+# its old session and can take minutes to recover; a new forward connects at
+# once. Every 10 s an HTTP request goes through the tunnel (Orca answers 404);
+# after two failures in a row the forward is restarted.
+set -u
+[ $# -ge 1 ] || { echo "usage: $0 <tailcat address> [local port] [remote port]" >&2; exit 2; }
+A=$1 L=${2:-16768} R=${3:-6768}
+TC=${TAILCAT:-$(command -v tailcat || echo /opt/homebrew/bin/tailcat)}
+log() { echo "$(date '+%F %T') $*"; }
+child=""
+trap '[ -n "$child" ] && kill "$child" 2>/dev/null; exit 0' TERM INT
+
+answers() { [ "$(curl -s -m 8 -o /dev/null -w '%{http_code}' "http://127.0.0.1:$L/")" != 000 ]; }
+
+while true; do
+  log "starting: tailcat forward $L -> $R"
+  "$TC" forward "$A" "$L:$R" &
+  child=$!
+  sleep 5
+  fails=0
+  while kill -0 "$child" 2>/dev/null; do
+    if answers; then
+      fails=0
+    else
+      fails=$((fails + 1))
+      if [ "$fails" -ge 2 ]; then
+        log "the tunnel does not answer: restarting the forward"
+        kill "$child" 2>/dev/null
+        # a hung forward that ignores TERM would keep the port
+        for _ in 1 2 3 4 5; do kill -0 "$child" 2>/dev/null || break; sleep 1; done
+        kill -9 "$child" 2>/dev/null
+        break
+      fi
+    fi
+    sleep 10
+  done
+  wait "$child" 2>/dev/null
+  child=""
+  sleep 2
+done
